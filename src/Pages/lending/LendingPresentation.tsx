@@ -319,6 +319,11 @@ const LendingPresentation: React.FC<LendingPresentationProps> = (props) => {
                   size="lg"
                   bg={inputBg}
                   borderRadius="md"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      props.onLogin(); // Enter 키를 누르면 로그인 버튼이 클릭됩니다.
+                    }
+                  }}
                 />
               </FormControl>
               <FormControl isInvalid={!!props.error}>
@@ -331,6 +336,11 @@ const LendingPresentation: React.FC<LendingPresentationProps> = (props) => {
                   size="lg"
                   bg={inputBg}
                   borderRadius="md"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      props.onLogin(); // Enter 키를 누르면 로그인 버튼이 클릭됩니다.
+                    }
+                  }}
                 />
                 <FormErrorMessage>{props.error}</FormErrorMessage>
               </FormControl>
