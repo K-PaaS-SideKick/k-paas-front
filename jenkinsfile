@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_CREDENTIALS_ID = 'Docker_sangwookie'
+        DOCKER_IMAGE_NAME = 'sangwookie/sidekick-react-app'
+
+    }
+    
+    
+    stages {
+        stage('Clone Repository') {
+            steps {
+                // Clone the repository
+                git credentialsId: 'GitHubCred', branch: 'master', url: 'https://github.com/K-PaaS-SideKick/k-paas-front'
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                // Install Node.js dependencies
+                // sh 'npm install'
+                bat 'npm install'
+            }
+        }
+        
+        stage('Build React App') {
+            steps {
+                // Build the React app
+                // sh 'npm run build'
+                bat 'npm run build'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image
+                    // sh """
+                    // docker build -t ${env.DOCKER_IMAGE}:latest .
+                    // """
+                    docker.build(DOCKER_IMAGE_NAME)
+                }
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Login to Docker registry
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                        // Push Docker image
+                        docker.image(DOCKER_IMAGE_NAME).push('latest')
+                    }
+                }
+            }
+        }
+    }
+
+//     post {
+//         always {
+//             // Clean up actions, such as deleting old images or workspace
+//         }
+//     }
+}
