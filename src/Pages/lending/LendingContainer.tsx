@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDisclosure } from "@chakra-ui/react";
 import LendingPresentation from "./LendingPresentation";
@@ -39,11 +39,7 @@ const LendingContainer: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [sortByViews, setSortByViews] = useState<boolean>(false);
 
-  useEffect(() => {
-    filterPosts();
-  }, [selectedCategories, posts, sortByViews]);
-
-  const filterPosts = () => {
+  const filterPosts = useCallback(() => {
     let filtered = posts;
     if (selectedCategories.length > 0) {
       filtered = posts.filter(post => 
@@ -54,7 +50,11 @@ const LendingContainer: React.FC = () => {
       filtered = [...filtered].sort((a, b) => b.views - a.views);
     }
     setFilteredPosts(filtered);
-  };
+  }, [posts, selectedCategories, sortByViews]);
+
+  useEffect(() => {
+    filterPosts();
+  }, [selectedCategories, posts, sortByViews, filterPosts]);
 
   const onLogin = async () => {
     if (!id || !password) {

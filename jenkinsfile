@@ -16,26 +16,28 @@ pipeline {
             }
         }
 
-        stage('Install TypeScript') {
-            steps {
-                // sh 'npm install typescript@4.9.5'
-                bat 'npm install typescript@4.9.5'
-            }
-        }
+        // stage('Install TypeScript') {
+        //     steps {
+        //         // sh 'yarn install typescript@4.9.5'
+        //         bat 'yarn install typescript@4.9.5'
+        //     }
+        // }
         
         stage('Install Dependencies') {
             steps {
                 // Install Node.js dependencies
-                // sh 'npm install'
-                bat 'npm install'
+                // sh 'yarn add -D @babel/plugin-proposal-private-property-in-object'
+                // sh 'yarn install'
+                bat 'yarn add -D @babel/plugin-proposal-private-property-in-object'
+                bat 'yarn install'
             }
         }
         
         stage('Build React App') {
             steps {
                 // Build the React app
-                // sh 'npm run build'
-                bat 'npm run build'
+                // sh 'yarn run build'
+                bat 'yarn run build'
             }
         }
         

@@ -1,20 +1,20 @@
 # Use the official Node.js image as the base image
-FROM node:14 as build
+FROM node:16 as build
 
 # Set the working directory
 WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+COPY package*.json yarn.lock ./
 
 # Install dependencies
-RUN npm install
+RUN yarn install
 
 # Copy the rest of the application code
 COPY . .
 
 # Build the React app
-RUN npm run build
+RUN yarn build
 
 # Use the official NGINX image to serve the React app
 FROM nginx:alpine
