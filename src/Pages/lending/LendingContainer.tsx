@@ -50,7 +50,7 @@ const LendingContainer: React.FC = () => {
       filtered = [...filtered].sort((a, b) => b.views - a.views);
     }
     setFilteredPosts(filtered);
-  });
+  }, [posts, selectedCategories, sortByViews]);
 
   useEffect(() => {
     filterPosts();
