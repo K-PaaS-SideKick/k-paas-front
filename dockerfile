@@ -1,11 +1,11 @@
 # Use the official Node.js image as the base image
-FROM node:14 as build
+FROM node:16 as build
 
 # Set the working directory
 WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
-COPY package.json yarn.lock ./
+COPY package*.json yarn.lock ./
 
 # Install dependencies
 RUN yarn install
