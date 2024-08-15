@@ -39,10 +39,6 @@ const LendingContainer: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [sortByViews, setSortByViews] = useState<boolean>(false);
 
-  useEffect(() => {
-    filterPosts();
-  }, [selectedCategories, posts, sortByViews, filterPosts]);
-
   const filterPosts = useCallback(() => {
     let filtered = posts;
     if (selectedCategories.length > 0) {
@@ -55,6 +51,10 @@ const LendingContainer: React.FC = () => {
     }
     setFilteredPosts(filtered);
   });
+
+  useEffect(() => {
+    filterPosts();
+  }, [selectedCategories, posts, sortByViews, filterPosts]);
 
   const onLogin = async () => {
     if (!id || !password) {
