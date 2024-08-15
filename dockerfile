@@ -17,13 +17,11 @@ COPY . .
 RUN yarn build
 
 # Use the official NGINX image to serve the React app
-FROM nginx:alpine
+FROM node:16-slim
 
-# Copy the build output to NGINX's web root
-COPY --from=build /app/build /usr/share/nginx/html
+WORKDIR /app
 
-# Expose port 80
-EXPOSE 80
+# Expose port 3000
+EXPOSE 3000
 
-# Start NGINX
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npx", "serve", "-s", "build"]
