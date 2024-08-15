@@ -15,6 +15,13 @@ pipeline {
                 git credentialsId: 'GitHubCred', branch: 'master', url: 'https://github.com/K-PaaS-SideKick/k-paas-front'
             }
         }
+
+        stage('Install TypeScript') {
+            steps {
+                // sh 'npm install typescript@4.9.5'
+                bat 'npm install typescript@4.9.5'
+            }
+        }
         
         stage('Install Dependencies') {
             steps {
