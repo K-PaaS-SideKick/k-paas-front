@@ -41,7 +41,7 @@ interface Post {
   views: number;
 }
 
-interface LendingPresentationProps {
+interface ProjectPresentationProps {
   isLoginModalOpen: boolean;
   onLoginModalOpen: () => void;
   onLoginModalClose: () => void;
@@ -73,7 +73,7 @@ interface LendingPresentationProps {
   sortByViews: boolean;
 }
 
-const LendingPresentation: React.FC<LendingPresentationProps> = (props) => {
+const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
   const bgColor = useColorModeValue("blue.500", "blue.700");
   const textColor = useColorModeValue("white", "gray.100");
   const modalBg = useColorModeValue("white", "gray.800");
@@ -402,4 +402,4 @@ const LendingPresentation: React.FC<LendingPresentationProps> = (props) => {
   );
 };
 
-export default LendingPresentation;
+export default ProjectPresentation;
