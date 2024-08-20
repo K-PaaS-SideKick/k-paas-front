@@ -14,13 +14,8 @@ export const routes: RouteObject[] = [
     element: <ProjectContainer />,
   },
   {
-    path: "party",
-    children: [
-      {
-        path: ":partyId",
-        element: <CommunityContainer />,
-      },
-    ],
+    path: "community",
+    element: <CommunityContainer />,
   },
 
   {
