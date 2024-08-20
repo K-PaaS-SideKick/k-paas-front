@@ -62,8 +62,8 @@ interface ProjectPresentationProps {
   isLoginModalOpen: boolean;
   onLoginModalOpen: () => void;
   onLoginModalClose: () => void;
-  id: string;
-  setId: (value: string) => void;
+  id: string | null;
+  setId: (value: string | null) => void;
   password: string;
   setPassword: (value: string) => void;
   error: string;
@@ -123,35 +123,96 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
             </InputGroup>
           </Flex>
           <Flex align="center">
-            <IconButton
-              aria-label="Messages"
-              icon={<BellIcon />}
-              variant="ghost"
-              color="white"
-              _hover={{ bg: "blue.600" }}
-              mr={2}
-            />
-            <Button
-              leftIcon={<EditIcon />}
-              colorScheme="blue"
-              variant="solid"
-              onClick={props.onWritePostModalOpen}
-              mr={4}
-            >
-              새 포스트
-            </Button>
-            <Menu>
-              <MenuButton as={Button} variant="ghost" p={0} colorScheme="blue.500">
-                <Avatar
-                  size="sm"
-                  src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+            {props.isLoggedIn ? (
+              <Box>
+                <IconButton
+                  aria-label="Messages"
+                  icon={<BellIcon />}
+                  variant="ghost"
+                  color="white"
+                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                  transition="all 0.2s"
+                  mr={2}
                 />
-              </MenuButton>
-              <MenuList>
-                <MenuItem>마이페이지</MenuItem>
-                <MenuItem >로그아웃</MenuItem>
-              </MenuList>
-            </Menu>
+                <Button
+                  leftIcon={<EditIcon />}
+                  colorScheme="blue"
+                  variant="solid"
+                  onClick={props.onWritePostModalOpen}
+                  mr={4}
+                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                  transition="all 0.2s"
+                >
+                  새 포스트
+                </Button>
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    variant="ghost"
+                    p={0}
+                    colorScheme="blue.500"
+                    _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                    transition="all 0.2s"
+                  >
+                    <Avatar
+                      size="sm"
+                      src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+                    />
+                  </MenuButton>
+                  <MenuList borderRadius={"20px"}>
+                    <MenuItem
+                      textAlign={"center"}
+                      height="100px"
+                      borderRadius={"20px"}
+                      _hover={{
+                        transform: "translateY(-2px)",
+                        boxShadow: "lg",
+                      }}
+                      transition="all 0.2s"
+                    >
+                      <Avatar
+                        size="sm"
+                        src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+                      />
+                      <Text ml={"2px"}>마이페이지</Text>
+                    </MenuItem>
+                    <MenuItem
+                      borderRadius={"20px"}
+                      onClick={props.onLogout}
+                      _hover={{
+                        transform: "translateY(-2px)",
+                        boxShadow: "lg",
+                      }}
+                      transition="all 0.2s"
+                    >
+                      <TbLogout />
+                      로그아웃
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+              </Box>
+            ) : (
+              <Box>
+                <Button
+                  borderRadius={"15px"}
+                  onClick={props.onLoginModalOpen}
+                  mr={"10px"}
+                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                  transition="all 0.2s"
+                >
+                  <BiLogIn />
+                  <Text ml="4px">로그인</Text>
+                </Button>
+                <Button
+                  borderRadius={"15px"}
+                  colorScheme="purple"
+                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                  transition="all 0.2s"
+                >
+                  회원가입
+                </Button>
+              </Box>
+            )}
           </Flex>
         </Flex>
 
@@ -368,7 +429,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
               <FormControl isInvalid={!!props.error}>
                 <FormLabel fontWeight="medium">아이디</FormLabel>
                 <Input
-                  value={props.id}
+                  value={props.id || ""}
                   onChange={(e) => props.setId(e.target.value)}
                   placeholder="아이디를 입력하세요"
                   size="lg"
@@ -376,7 +437,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                   borderRadius="md"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      props.onLogin(); // Enter 키를 누르면 로그인 버튼이 클릭됩니다.
+                      props.onLogin();
                     }
                   }}
                 />
@@ -393,7 +454,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                   borderRadius="md"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      props.onLogin(); // Enter 키를 누르면 로그인 버튼이 클릭됩니다.
+                      props.onLogin();
                     }
                   }}
                 />
@@ -402,18 +463,32 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button
-              colorScheme="blue"
-              w="100%"
-              onClick={props.onLogin}
-              size="lg"
-              fontWeight="bold"
-              borderRadius="md"
-              _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-              transition="all 0.2s"
-            >
-              로그인
-            </Button>
+            <VStack width="100%">
+              <Button
+                colorScheme="blue"
+                w="100%"
+                onClick={props.onLogin}
+                size="lg"
+                fontWeight="bold"
+                borderRadius="md"
+                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                transition="all 0.2s"
+              >
+                로그인
+              </Button>
+              <Button
+                colorScheme="blue"
+                w="100%"
+                onClick={props.onLoginModalClose}
+                size="lg"
+                fontWeight="bold"
+                borderRadius="md"
+                _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+                transition="all 0.2s"
+              >
+                닫기
+              </Button>
+            </VStack>
           </ModalFooter>
         </ModalContent>
       </Modal>

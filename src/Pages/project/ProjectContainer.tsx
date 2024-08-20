@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDisclosure } from "@chakra-ui/react";
 import ProjectPresentation from "./ProjectPresentation";
+import { useAppContext } from "../../AppContext";
 
 interface Post {
   id: number;
@@ -22,15 +23,17 @@ const categories = ["머신러닝", "C++", "Java", "Python", "JavaScript", "웹 
 
 const ProjectContainer: React.FC = () => {
   const navigate = useNavigate();
+
+  const context = useAppContext();
+
   const { isOpen: isLoginModalOpen, onOpen: onLoginModalOpen, onClose: onLoginModalClose } = useDisclosure();
   const { isOpen: isPostModalOpen, onOpen: onPostModalOpen, onClose: onPostModalClose } = useDisclosure();
   const { isOpen: isWritePostModalOpen, onOpen: onWritePostModalOpen, onClose: onWritePostModalClose } = useDisclosure();
   
-  const [id, setId] = useState<string>("");
+  const [id, setId] = useState<string | null>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  
+
   const [posts, setPosts] = useState<Post[]>(dummyPosts);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>(dummyPosts);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -64,7 +67,8 @@ const ProjectContainer: React.FC = () => {
       setError("");
       try {
         /* API 호출 */
-        setIsLoggedIn(true);
+        context.setUserId(id);
+        context.setIsLoggedIn(true);
         onLoginModalClose();
         alert("로그인 성공");
       } catch (error) {
@@ -75,7 +79,8 @@ const ProjectContainer: React.FC = () => {
   };
 
   const onLogout = () => {
-    setIsLoggedIn(false);
+    context.setIsLoggedIn(false);
+    context.logout();
   };
 
   const handleCategoryClick = (category: string) => {
@@ -95,7 +100,7 @@ const ProjectContainer: React.FC = () => {
   };
 
   const handleNewPost = () => {
-    if (!isLoggedIn) {
+    if (!context.isLoggedIn) {
       onLoginModalOpen();
       return;
     }
@@ -150,7 +155,7 @@ const ProjectContainer: React.FC = () => {
       password={password}
       setPassword={setPassword}
       error={error}
-      isLoggedIn={isLoggedIn}
+      isLoggedIn={context.isLoggedIn}
       onLogin={onLogin}
       onLogout={onLogout}
       posts={filteredPosts}
