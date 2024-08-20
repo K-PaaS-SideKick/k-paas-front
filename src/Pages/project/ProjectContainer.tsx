@@ -13,17 +13,18 @@ interface Post {
 
 const dummyPosts: Post[] = [
   { id: 1, title: "First Post", content: "엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 ", categories: ["Python"], views: 100 },
-  { id: 2, title: "Second Post", content: "메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 ", categories: ["Java", "Machine Learning"], views: 80 },
-  { id: 3, title: "Third Post", content: "Third", categories: ["JavaScript", "Web Development"], views: 120 },
-  { id: 4, title: "Fourth Post", content: "네 번째", categories: ["C++", "Machine Learning"], views: 90 },
+  { id: 2, title: "Second Post", content: "메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 ", categories: ["Java", "머신러닝"], views: 80 },
+  { id: 3, title: "Third Post", content: "Third", categories: ["JavaScript", "웹 개발"], views: 120 },
+  { id: 4, title: "Fourth Post", content: "네 번째", categories: ["C++", "머신러닝"], views: 90 },
 ];
 
-const categories = ["Machine Learning", "C++", "Java", "Python", "JavaScript", "Web Development"];
+const categories = ["머신러닝", "C++", "Java", "Python", "JavaScript", "웹 개발"];
 
 const ProjectContainer: React.FC = () => {
   const navigate = useNavigate();
   const { isOpen: isLoginModalOpen, onOpen: onLoginModalOpen, onClose: onLoginModalClose } = useDisclosure();
   const { isOpen: isPostModalOpen, onOpen: onPostModalOpen, onClose: onPostModalClose } = useDisclosure();
+  const { isOpen: isWritePostModalOpen, onOpen: onWritePostModalOpen, onClose: onWritePostModalClose } = useDisclosure();
   
   const [id, setId] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -111,6 +112,7 @@ const ProjectContainer: React.FC = () => {
       setNewPostTitle("");
       setNewPostContent("");
       setNewPostCategories([]);
+      onWritePostModalClose();
     } else {
       alert("제목, 내용을 입력하고 최소한 하나의 카테고리를 선택해주세요.");
     }
@@ -129,6 +131,13 @@ const ProjectContainer: React.FC = () => {
 
   const toggleSortByViews = () => {
     setSortByViews(!sortByViews);
+  };
+
+  const handleWritePostModalClose = () => {
+    onWritePostModalClose(); // 모달을 닫는 기존 함수 호출
+    setNewPostCategories([]); // 체크박스 상태 초기화
+    setNewPostTitle("");      // 제목 초기화
+    setNewPostContent("");    // 내용 초기화
   };
 
   return (
@@ -162,6 +171,9 @@ const ProjectContainer: React.FC = () => {
       selectedPost={selectedPost}
       toggleSortByViews={toggleSortByViews}
       sortByViews={sortByViews}
+      isWritePostModalOpen={isWritePostModalOpen}
+      onWritePostModalOpen={onWritePostModalOpen}
+      onWritePostModalClose={handleWritePostModalClose}  // 수정된 함수 사용
     />
   );
 };

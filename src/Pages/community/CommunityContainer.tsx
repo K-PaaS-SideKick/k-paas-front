@@ -1,5 +1,10 @@
-const CommunityContainer = () => {
-  return <p>커뮤니티</p>;
+import React, { useState, useEffect } from "react";
+import CommunityPresentation from "./CommunityPresentation";
+
+const CommunityContainer: React.FC = () => {
+  return (
+    <CommunityPresentation/>
+  );
 };
 
 export default CommunityContainer;
