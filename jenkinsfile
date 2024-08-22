@@ -1,59 +1,136 @@
 pipeline {
-    agent any
+    agent {
+            kubernetes {
+                yaml '''
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                  labels:
+                    app: jenkins-pipeline
+                spec:
+                  containers:
+                  - name: docker
+                    image: docker:24.0.1-dind
+                    securityContext:
+                      privileged: true
+                    volumeMounts:
+                    - name: docker-graph-storage
+                      mountPath: /var/lib/docker
+                    env:
+                    - name: DOCKER_TLS_CERTDIR
+                      value: ""
+                    ports:
+                    - containerPort: 2375
+                      name: docker
+                  - name: docker-cli
+                    image: docker:24.0.1-cli
+                    command:
+                    - cat
+                    tty: true
+                    env:
+                    - name: DOCKER_HOST
+                      value: "tcp://localhost:2375"
+                  volumes:
+                  - name: docker-graph-storage
+                    emptyDir: {}
+                '''
+            }
+    }
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'Docker_sangwookie'
-        DOCKER_IMAGE_NAME = 'sangwookie/sidekick-react-app'
-
+        DOCKERHUB_REPO = 'sangwookie/sidekick-react-app'
+        GIT_REPO = 'https://github.com/K-PaaS-SideKick/k-paas-front'
+        DOCKERHUB_CREDENTIALS_ID = 'DockerCred'
+        GITHUB_CREDENTIALS = credentials('GitHubCred')
     }
-    
-    
+
     stages {
         stage('Clone Repository') {
             steps {
                 // Clone the repository
-                git credentialsId: 'GitHubCred', branch: 'jenkinsOpt', url: 'https://github.com/K-PaaS-SideKick/k-paas-front'
+                git credentialsId: 'GitHubCred',
+                    branch: 'master',
+                    url: 'https://github.com/K-PaaS-SideKick/k-paas-front'
             }
         }
-        
-        // stage('Install Dependencies') {
-        //     steps {
-        //         // Install Node.js dependencies
-        //         // sh 'yarn add -D @babel/plugin-proposal-private-property-in-object'
-        //         // sh 'yarn install'
-        //         bat 'yarn add -D @babel/plugin-proposal-private-property-in-object'
-        //         bat 'yarn install'
-        //     }
-        // }
-        
-        // stage('Build React App') {
-        //     steps {
-        //         // Build the React app
-        //         // sh 'yarn run build'
-        //         bat 'yarn run build'
-        //     }
-        // }
-        
-        stage('Build Docker Image') {
+
+        stage('Get Git Tag') {
             steps {
                 script {
-                    // Build the Docker image
-                    // sh """
-                    // docker build -t ${env.DOCKER_IMAGE}:latest .
-                    // """
-                    docker.build(DOCKER_IMAGE_NAME)
+                    GIT_TAG = sh(script: 'git describe --always', returnStdout: true).trim()
+                }
+            }
+        }
+
+        stage('Wait for Docker Daemon') {
+            steps {
+                container('docker-cli') {
+                    script {
+                        // Wait for the Docker daemon to be ready
+                        def daemonReady = false
+                        for (int i = 0; i < 10; i++) {
+                            def result = sh(script: 'docker info > /dev/null 2>&1', returnStatus: true)
+                            if (result == 0) {
+                                daemonReady = true
+                                break
+                            }
+                            echo 'Waiting for Docker daemon to be ready...'
+                            sleep 5
+                        }
+                        if (!daemonReady) {
+                            error "Docker daemon not ready"
+                        }
+                    }
                 }
             }
         }
         
+        stage('Build Docker Image') {
+            steps {
+                container('docker-cli') {
+                    script {
+                        sh """
+                        docker build -t ${DOCKERHUB_REPO}:${GIT_TAG} .
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Push Docker Image') {
             steps {
-                script {
-                    // Login to Docker registry
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        // Push Docker image
-                        docker.image(DOCKER_IMAGE_NAME).push('latest')
+                container('docker-cli') {
+                    withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh """
+                            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                            docker push ${DOCKERHUB_REPO}:${GIT_TAG}
+                        """
                     }
+                }
+            }
+        }
+
+        stage('Checkout Helm Chart Repository') {
+            steps {
+                script {
+                    git branch: 'main',
+                        credentialsId: 'GitHubCred',
+                        url: 'https://github.com/K-PaaS-SideKick/react-service-chart'
+                }
+            }
+        }
+
+        stage("Git Push to trigger Argo CD") {
+            steps {
+                withCredentials([gitUsernamePassword(credentialsId: 'GitHubCred', gitToolName: 'Default')]) {
+                    sh """
+                    sed -i "s/^  tag: .*/  tag: ${GIT_TAG}/" ./values.yaml
+                    git add ./values.yaml
+                    git config user.name "SangWookie"
+                    git config user.email "swcube520@gmail.com"
+                    git commit --allow-empty -m "trigger argocd: ${GIT_TAG}"
+                    git push origin main
+                """
                 }
             }
         }
