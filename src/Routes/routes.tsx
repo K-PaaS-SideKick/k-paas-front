@@ -1,5 +1,5 @@
 import { RouteObject } from "react-router-dom";
-import { LendingContainer } from "../Pages/lending";
+import { LandingContainer } from "../Pages/landing";
 import { ProjectContainer } from "../Pages/project";
 import { CommunityContainer } from "../Pages/community";
 import { PublicContainer } from "../Pages/public";
@@ -7,25 +7,15 @@ import { PublicContainer } from "../Pages/public";
 export const routes: RouteObject[] = [
   {
     path: "/",
-    element: <LendingContainer />,
+    element: <LandingContainer />,
   },
   {
-    path: "party",
-    children: [
-      {
-        path: ":partyId",
-        element: <ProjectContainer />,
-      },
-    ],
+    path: "project",
+    element: <ProjectContainer />,
   },
   {
-    path: "party",
-    children: [
-      {
-        path: ":partyId",
-        element: <CommunityContainer />,
-      },
-    ],
+    path: "community",
+    element: <CommunityContainer />,
   },
 
   {
@@ -39,6 +29,6 @@ export const routes: RouteObject[] = [
   },
   {
     path: "*",
-    element: <LendingContainer />,
+    element: <LandingContainer />,
   },
 ];
