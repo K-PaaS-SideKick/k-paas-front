@@ -10,6 +10,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
+  Image,
   VStack,
   Text,
   useDisclosure,
@@ -49,6 +50,7 @@ import {
   BellIcon,
   EditIcon,
 } from "@chakra-ui/icons";
+import { User, MessageSquare, Lightbulb, Share2 } from "lucide-react";
 
 interface Post {
   id: number;
@@ -62,6 +64,9 @@ interface ProjectPresentationProps {
   isLoginModalOpen: boolean;
   onLoginModalOpen: () => void;
   onLoginModalClose: () => void;
+  isRegisterModalOpen: boolean;
+  onRegisterModalOpen: () => void;
+  onRegisterModalClose: () => void;
   id: string | null;
   setId: (value: string | null) => void;
   password: string;
@@ -205,6 +210,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 </Button>
                 <Button
                   borderRadius={"15px"}
+                  onClick={props.onRegisterModalOpen}
                   colorScheme="purple"
                   _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                   transition="all 0.2s"
@@ -489,6 +495,79 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 닫기
               </Button>
             </VStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Register Modal */}
+      <Modal
+        isOpen={props.isRegisterModalOpen}
+        onClose={props.onRegisterModalClose}
+        isCentered
+        motionPreset="slideInBottom"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader textAlign="center">KPaaS 가입</ModalHeader>
+          <ModalBody>
+            <Text textAlign="center" mb={4}>
+              KPaaS에 오신 것을 환영합니다.
+            </Text>
+            <VStack spacing={3} align="stretch">
+              <Button leftIcon={<Icon as={User} />} variant="outline" size="lg">
+                멋진 프로젝트를 찾고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={MessageSquare} />}
+                variant="outline"
+                size="lg"
+              >
+                프로젝트에 대한 피드백을 받고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={Lightbulb} />}
+                variant="outline"
+                size="lg"
+              >
+                다양한 영감을 얻고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={Share2} />}
+                variant="outline"
+                size="lg"
+              >
+                프로젝트를 사람들에게 알리고 싶어요
+              </Button>
+            </VStack>
+          </ModalBody>
+          <ModalFooter flexDirection="column" gap={2}>
+            <Button
+              colorScheme="gray"
+              width="100%"
+              leftIcon={
+                <Image
+                  boxSize="20px"
+                  src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+                  alt="Google logo"
+                />
+              }
+            >
+              구글 계정으로 가입
+            </Button>
+
+            <Button
+              colorScheme="gray"
+              width="100%"
+              leftIcon={
+                <Image
+                  boxSize="20px"
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Font_Awesome_5_brands_github.svg/991px-Font_Awesome_5_brands_github.svg.png"
+                  alt="Google logo"
+                />
+              }
+            >
+              GitHub 계정으로 가입
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
