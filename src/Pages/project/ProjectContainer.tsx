@@ -27,8 +27,12 @@ const ProjectContainer: React.FC = () => {
   const context = useAppContext();
 
   const { isOpen: isLoginModalOpen, onOpen: onLoginModalOpen, onClose: onLoginModalClose } = useDisclosure();
+  const { isOpen: isRegisterModalOpen, onOpen: onRegisterModalOpen, onClose: onRegisterModalClose } = useDisclosure();
+
   const { isOpen: isPostModalOpen, onOpen: onPostModalOpen, onClose: onPostModalClose } = useDisclosure();
   const { isOpen: isWritePostModalOpen, onOpen: onWritePostModalOpen, onClose: onWritePostModalClose } = useDisclosure();
+
+  const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
   
   const [id, setId] = useState<string | null>("");
   const [password, setPassword] = useState<string>("");
@@ -150,6 +154,12 @@ const ProjectContainer: React.FC = () => {
       isLoginModalOpen={isLoginModalOpen}
       onLoginModalOpen={onLoginModalOpen}
       onLoginModalClose={onLoginModalClose}
+      isRegisterModalOpen={isRegisterModalOpen}
+      onRegisterModalOpen={onRegisterModalOpen}
+      onRegisterModalClose={onRegisterModalClose}
+      isDrawerOpen={isDrawerOpen}
+      onDrawerOpen={onDrawerOpen}
+      onDrawerClose={onDrawerClose}
       id={id}
       setId={setId}
       password={password}

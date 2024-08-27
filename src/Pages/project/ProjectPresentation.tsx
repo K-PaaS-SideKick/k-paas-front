@@ -10,6 +10,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
+  Image,
   VStack,
   Text,
   useDisclosure,
@@ -39,6 +40,13 @@ import {
   HStack,
   Wrap,
   WrapItem,
+  useBreakpointValue,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
 import { BiLogIn } from "react-icons/bi";
@@ -48,7 +56,9 @@ import {
   SearchIcon,
   BellIcon,
   EditIcon,
+  HamburgerIcon,
 } from "@chakra-ui/icons";
+import { User, MessageSquare, Lightbulb, Share2 } from "lucide-react";
 
 interface Post {
   id: number;
@@ -62,6 +72,9 @@ interface ProjectPresentationProps {
   isLoginModalOpen: boolean;
   onLoginModalOpen: () => void;
   onLoginModalClose: () => void;
+  isRegisterModalOpen: boolean;
+  onRegisterModalOpen: () => void;
+  onRegisterModalClose: () => void;
   id: string | null;
   setId: (value: string | null) => void;
   password: string;
@@ -91,11 +104,16 @@ interface ProjectPresentationProps {
   isWritePostModalOpen: boolean;
   onWritePostModalOpen: () => void;
   onWritePostModalClose: () => void;
+  isDrawerOpen: boolean;
+  onDrawerOpen: () => void;
+  onDrawerClose: () => void;
 }
 
 const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
   const modalBg = useColorModeValue("white", "gray.800");
   const inputBg = useColorModeValue("gray.100", "gray.700");
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   return (
     <Box>
@@ -111,192 +129,87 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
         zIndex={1000}
       >
         <Flex align="center" justify="space-between">
-          <Flex align="center">
+          <Flex align="center" flex={1}>
             <Box fontWeight="bold" fontSize="xl" color="white" mr={4}>
               KPAAS
             </Box>
-            <InputGroup maxW="400px">
+            <InputGroup maxW={isMobile ? "60%" : "400px"}>
               <InputLeftElement pointerEvents="none">
                 <SearchIcon color="gray.300" />
               </InputLeftElement>
               <Input placeholder="검색하기" bg="white" />
             </InputGroup>
           </Flex>
-          <Flex align="center">
-            {props.isLoggedIn ? (
-              <Box>
-                <IconButton
-                  aria-label="Messages"
-                  icon={<BellIcon />}
-                  variant="ghost"
-                  color="white"
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                  mr={2}
-                />
-                <Button
-                  leftIcon={<EditIcon />}
-                  colorScheme="blue"
-                  variant="solid"
-                  onClick={props.onWritePostModalOpen}
-                  mr={4}
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                >
-                  새 포스트
-                </Button>
-                <Menu>
-                  <MenuButton
-                    as={Button}
+          {isMobile ? (
+            <IconButton
+              aria-label="Open menu"
+              icon={<HamburgerIcon />}
+              onClick={props.onDrawerOpen}
+              variant="ghost"
+              color="white"
+            />
+          ) : (
+            <Flex align="center">
+              {props.isLoggedIn ? (
+                <>
+                  <IconButton
+                    aria-label="Messages"
+                    icon={<BellIcon />}
                     variant="ghost"
-                    p={0}
-                    colorScheme="blue.500"
-                    _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                    transition="all 0.2s"
+                    color="white"
+                    mr={2}
+                  />
+                  <Button
+                    leftIcon={<EditIcon />}
+                    colorScheme="blue"
+                    variant="solid"
+                    onClick={props.onWritePostModalOpen}
+                    mr={4}
                   >
-                    <Avatar
-                      size="sm"
-                      src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+                    새 포스트
+                  </Button>
+                  <Menu>
+                    <MenuButton
+                      as={IconButton}
+                      icon={
+                        <Avatar
+                          size="sm"
+                          src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+                        />
+                      }
+                      variant="ghost"
+                      colorScheme="blue.500"
                     />
-                  </MenuButton>
-                  <MenuList borderRadius={"20px"}>
-                    <MenuItem
-                      textAlign={"center"}
-                      height="100px"
-                      borderRadius={"20px"}
-                      _hover={{
-                        transform: "translateY(-2px)",
-                        boxShadow: "lg",
-                      }}
-                      transition="all 0.2s"
-                    >
-                      <Avatar
-                        size="sm"
-                        src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
-                      />
-                      <Text ml={"2px"}>마이페이지</Text>
-                    </MenuItem>
-                    <MenuItem
-                      borderRadius={"20px"}
-                      onClick={props.onLogout}
-                      _hover={{
-                        transform: "translateY(-2px)",
-                        boxShadow: "lg",
-                      }}
-                      transition="all 0.2s"
-                    >
-                      <TbLogout />
-                      로그아웃
-                    </MenuItem>
-                  </MenuList>
-                </Menu>
-              </Box>
-            ) : (
-              <Box>
-                <Button
-                  borderRadius={"15px"}
-                  onClick={props.onLoginModalOpen}
-                  mr={"10px"}
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                >
-                  <BiLogIn />
-                  <Text ml="4px">로그인</Text>
-                </Button>
-                <Button
-                  borderRadius={"15px"}
-                  colorScheme="purple"
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                >
-                  회원가입
-                </Button>
-              </Box>
-            )}
-          </Flex>
-        </Flex>
-
-        <Modal
-          isOpen={props.isWritePostModalOpen}
-          onClose={props.onWritePostModalClose}
-        >
-          <ModalOverlay />
-          <ModalContent
-            bg="white"
-            borderRadius="lg"
-            boxShadow="lg"
-            p={6}
-            maxW="600px"
-          >
-            <ModalHeader
-              fontSize="lg"
-              fontWeight="bold"
-              color="gray.800"
-              textAlign="center"
-              mt={2}
-            >
-              새 게시글 작성
-            </ModalHeader>
-            <ModalCloseButton size="lg" />
-            <ModalBody>
-              <Input
-                placeholder="제목"
-                value={props.newPostTitle}
-                onChange={(e) => props.setNewPostTitle(e.target.value)}
-                mb={2}
-                width="100%"
-              />
-              <Textarea
-                placeholder="내용"
-                value={props.newPostContent}
-                onChange={(e) => props.setNewPostContent(e.target.value)}
-                mb={2}
-                width="100%"
-                height="300px"
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Flex align="center" justify="flex-end" width="100%" gap={2}>
-                <Menu closeOnSelect={false}>
-                  <MenuButton
-                    as={Button}
-                    rightIcon={<ChevronDownIcon />}
-                    minWidth="150px"
-                  >
-                    카테고리 선택
-                  </MenuButton>
-                  <MenuList>
-                    {props.categories.map((category) => (
-                      <MenuItem
-                        key={category}
-                        onClick={() =>
-                          props.handleNewPostCategoryClick(category)
-                        }
-                      >
-                        <Checkbox
-                          isChecked={props.newPostCategories.includes(category)}
-                          onChange={() =>
-                            props.handleNewPostCategoryClick(category)
-                          }
-                        >
-                          {category}
-                        </Checkbox>
+                    <MenuList borderRadius={"20px"}>
+                      <MenuItem borderRadius={"15px"}>마이페이지</MenuItem>
+                      <MenuItem borderRadius={"15px"} onClick={props.onLogout}>
+                        <TbLogout />
+                        로그아웃
                       </MenuItem>
-                    ))}
-                  </MenuList>
-                </Menu>
-
-                <Button onClick={props.handleNewPost}>게시하기</Button>
-                <Button onClick={props.onWritePostModalClose}>취소</Button>
-              </Flex>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+                    </MenuList>
+                  </Menu>
+                </>
+              ) : (
+                <>
+                  <Button onClick={props.onLoginModalOpen} mr={2}>
+                    로그인
+                  </Button>
+                  <Button
+                    onClick={props.onRegisterModalOpen}
+                    colorScheme="purple"
+                  >
+                    회원가입
+                  </Button>
+                </>
+              )}
+            </Flex>
+          )}
+        </Flex>
       </Box>
 
       {/* Main Content */}
       <Container maxW="container.xl" marginTop="80px">
-        <Grid templateColumns="3fr 1fr" gap={6}>
+        <Grid templateColumns={isMobile ? "1fr" : "3fr 1fr"} gap={6}>
           <GridItem>
             <VStack spacing={4} align="stretch">
               {/* Posts List */}
@@ -341,17 +254,80 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
             </VStack>
           </GridItem>
 
-          <GridItem>
-            <VStack
-              spacing={4}
-              align="stretch"
-              position="sticky"
-              top="80px"
-              border="1px"
-              borderColor="gray.200"
-              borderRadius="md"
-              p={4}
-            >
+          {!isMobile && (
+            <GridItem>
+              <VStack
+                spacing={4}
+                align="stretch"
+                position="sticky"
+                top="80px"
+                border="1px"
+                borderColor="gray.200"
+                borderRadius="md"
+                p={4}
+              >
+                {/* Categories */}
+                <Box>
+                  <Heading size="md" mb={2}>
+                    카테고리
+                  </Heading>
+                  <SimpleGrid columns={2} spacing={2}>
+                    {props.categories.map((category) => (
+                      <Button
+                        key={category}
+                        onClick={() => props.handleCategoryClick(category)}
+                        colorScheme={
+                          props.selectedCategories.includes(category)
+                            ? "blue"
+                            : "gray"
+                        }
+                        minWidth="100px"
+                        textAlign="center"
+                      >
+                        {category}
+                      </Button>
+                    ))}
+                  </SimpleGrid>
+                </Box>
+
+                {/* Popular Posts */}
+                <Box>
+                  <Heading size="md" mb={2}>
+                    인기 글
+                  </Heading>
+                  <Stack spacing={2}>
+                    <Text fontWeight="bold">커뮤니티 인기글</Text>
+                    {props.posts
+                      .sort((a, b) => b.views - a.views)
+                      .slice(0, 5)
+                      .map((post) => (
+                        <Text
+                          key={post.id}
+                          onClick={() => props.handlePostClick(post)}
+                          cursor="pointer"
+                          width="100%"
+                          textAlign="left"
+                          isTruncated
+                        >
+                          {post.title} (조회수: {post.views})
+                        </Text>
+                      ))}
+                  </Stack>
+                </Box>
+              </VStack>
+            </GridItem>
+          )}
+        </Grid>
+      </Container>
+
+      {/* Drawer for mobile */}
+      <Drawer isOpen={props.isDrawerOpen} placement="right" onClose={props.onDrawerClose}>
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader>메뉴</DrawerHeader>
+          <DrawerBody>
+            <VStack spacing={4} align="stretch">
               {/* Categories */}
               <Box>
                 <Heading size="md" mb={2}>
@@ -361,7 +337,9 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                   {props.categories.map((category) => (
                     <Button
                       key={category}
-                      onClick={() => props.handleCategoryClick(category)}
+                      onClick={() => {
+                        props.handleCategoryClick(category);
+                      }}
                       colorScheme={
                         props.selectedCategories.includes(category)
                           ? "blue"
@@ -389,7 +367,10 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                     .map((post) => (
                       <Text
                         key={post.id}
-                        onClick={() => props.handlePostClick(post)}
+                        onClick={() => {
+                          props.handlePostClick(post);
+                          props.onDrawerClose();
+                        }}
                         cursor="pointer"
                         width="100%"
                         textAlign="left"
@@ -401,9 +382,73 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 </Stack>
               </Box>
             </VStack>
-          </GridItem>
-        </Grid>
-      </Container>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Mobile Bottom Bar */}
+      {isMobile && (
+        <Box
+          position="fixed"
+          bottom={0}
+          left={0}
+          right={0}
+          bg="white"
+          boxShadow="0 -2px 10px rgba(0,0,0,0.1)"
+          zIndex={1000}
+        >
+          <Flex justify="space-around" py={2}>
+            {!props.isLoggedIn ? (
+              <>
+                <Button onClick={props.onLoginModalOpen} size="sm">
+                  로그인
+                </Button>
+                <Button
+                  onClick={props.onRegisterModalOpen}
+                  size="sm"
+                  colorScheme="purple"
+                >
+                  회원가입
+                </Button>
+              </>
+            ) : (
+              <>
+                <Menu>
+                  <MenuButton
+                    as={IconButton}
+                    icon={
+                      <Avatar
+                        size="sm"
+                        src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+                      />
+                    }
+                    variant="ghost"
+                    colorScheme="blue.500"
+                  />
+                  <MenuList borderRadius={"20px"}>
+                    <MenuItem borderRadius={"15px"}>마이페이지</MenuItem>
+                    <MenuItem borderRadius={"15px"} onClick={props.onLogout}>
+                      <TbLogout />
+                      로그아웃
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+                <IconButton
+                  aria-label="Messages"
+                  icon={<BellIcon />}
+                  variant="ghost"
+                />
+                <IconButton
+                  aria-label="New Post"
+                  icon={<EditIcon />}
+                  colorScheme="blue"
+                  onClick={props.onWritePostModalOpen}
+                />
+              </>
+            )}
+          </Flex>
+        </Box>
+      )}
 
       {/* Login Modal */}
       <Modal
@@ -493,6 +538,79 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
         </ModalContent>
       </Modal>
 
+      {/* Register Modal */}
+      <Modal
+        isOpen={props.isRegisterModalOpen}
+        onClose={props.onRegisterModalClose}
+        isCentered
+        motionPreset="slideInBottom"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader textAlign="center">KPaaS 가입</ModalHeader>
+          <ModalBody>
+            <Text textAlign="center" mb={4}>
+              KPaaS에 오신 것을 환영합니다.
+            </Text>
+            <VStack spacing={3} align="stretch">
+              <Button leftIcon={<Icon as={User} />} variant="outline" size="lg">
+                멋진 프로젝트를 찾고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={MessageSquare} />}
+                variant="outline"
+                size="lg"
+              >
+                프로젝트에 대한 피드백을 받고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={Lightbulb} />}
+                variant="outline"
+                size="lg"
+              >
+                다양한 영감을 얻고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={Share2} />}
+                variant="outline"
+                size="lg"
+              >
+                프로젝트를 사람들에게 알리고 싶어요
+              </Button>
+            </VStack>
+          </ModalBody>
+          <ModalFooter flexDirection="column" gap={2}>
+            <Button
+              colorScheme="gray"
+              width="100%"
+              leftIcon={
+                <Image
+                  boxSize="20px"
+                  src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+                  alt="Google logo"
+                />
+              }
+            >
+              구글 계정으로 가입
+            </Button>
+
+            <Button
+              colorScheme="gray"
+              width="100%"
+              leftIcon={
+                <Image
+                  boxSize="20px"
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Font_Awesome_5_brands_github.svg/991px-Font_Awesome_5_brands_github.svg.png"
+                  alt="Google logo"
+                />
+              }
+            >
+              GitHub 계정으로 가입
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       {/* Post Modal */}
       <Modal
         isOpen={props.isPostModalOpen}
@@ -525,6 +643,82 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
             <Button colorScheme="blue" mr={3} onClick={props.onPostModalClose}>
               닫기
             </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Write Posts Modal */}
+      <Modal
+        isOpen={props.isWritePostModalOpen}
+        onClose={props.onWritePostModalClose}
+      >
+        <ModalOverlay />
+        <ModalContent
+          bg="white"
+          borderRadius="lg"
+          boxShadow="lg"
+          p={6}
+          maxW="600px"
+        >
+          <ModalHeader
+            fontSize="lg"
+            fontWeight="bold"
+            color="gray.800"
+            textAlign="center"
+            mt={2}
+          >
+            새 게시글 작성
+          </ModalHeader>
+          <ModalCloseButton size="lg" />
+          <ModalBody>
+            <Input
+              placeholder="제목"
+              value={props.newPostTitle}
+              onChange={(e) => props.setNewPostTitle(e.target.value)}
+              mb={2}
+              width="100%"
+            />
+            <Textarea
+              placeholder="내용"
+              value={props.newPostContent}
+              onChange={(e) => props.setNewPostContent(e.target.value)}
+              mb={2}
+              width="100%"
+              height="300px"
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Flex align="center" justify="flex-end" width="100%" gap={2}>
+              <Menu closeOnSelect={false}>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  minWidth="150px"
+                >
+                  카테고리 선택
+                </MenuButton>
+                <MenuList>
+                  {props.categories.map((category) => (
+                    <MenuItem
+                      key={category}
+                      onClick={() => props.handleNewPostCategoryClick(category)}
+                    >
+                      <Checkbox
+                        isChecked={props.newPostCategories.includes(category)}
+                        onChange={() =>
+                          props.handleNewPostCategoryClick(category)
+                        }
+                      >
+                        {category}
+                      </Checkbox>
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </Menu>
+
+              <Button onClick={props.handleNewPost}>게시하기</Button>
+              <Button onClick={props.onWritePostModalClose}>취소</Button>
+            </Flex>
           </ModalFooter>
         </ModalContent>
       </Modal>
