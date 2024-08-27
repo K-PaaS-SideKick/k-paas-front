@@ -50,7 +50,7 @@ import {
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
 import { BiLogIn } from "react-icons/bi";
-import { NavigateFunction } from "react-router-dom";
+import { Navigate, NavigateFunction } from "react-router-dom";
 import {
   ChevronDownIcon,
   SearchIcon,
@@ -181,7 +181,8 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                       colorScheme="blue.500"
                     />
                     <MenuList borderRadius={"20px"}>
-                      <MenuItem borderRadius={"15px"}>마이페이지</MenuItem>
+                      <MenuItem borderRadius={"15px"} onClick={() => props.navigate("/mypage")}>마이페이지</MenuItem>
+                      <MenuItem borderRadius={"15px"} onClick={() => props.navigate("/settings")}>설정</MenuItem>
                       <MenuItem borderRadius={"15px"} onClick={props.onLogout}>
                         <TbLogout />
                         로그아웃
@@ -257,7 +258,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
           {!isMobile && (
             <GridItem>
               <VStack
-                spacing={4}
+                spacing={100}
                 align="stretch"
                 position="sticky"
                 top="80px"
@@ -327,7 +328,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
           <DrawerCloseButton />
           <DrawerHeader>메뉴</DrawerHeader>
           <DrawerBody>
-            <VStack spacing={4} align="stretch">
+            <VStack spacing={100} align="stretch">
               {/* Categories */}
               <Box>
                 <Heading size="md" mb={2}>
@@ -426,7 +427,8 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                     colorScheme="blue.500"
                   />
                   <MenuList borderRadius={"20px"}>
-                    <MenuItem borderRadius={"15px"}>마이페이지</MenuItem>
+                    <MenuItem borderRadius={"15px"} onClick={() => props.navigate("/mypage")}>마이페이지</MenuItem>
+                    <MenuItem borderRadius={"15px"} onClick={() => props.navigate("/settings")}>설정</MenuItem>
                     <MenuItem borderRadius={"15px"} onClick={props.onLogout}>
                       <TbLogout />
                       로그아웃
