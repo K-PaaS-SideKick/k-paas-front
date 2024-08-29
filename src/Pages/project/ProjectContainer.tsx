@@ -109,6 +109,15 @@ const ProjectContainer: React.FC = () => {
     filterPosts();
   }, [selectedCategories, posts, sortByViews]);
 
+  useEffect(() => {
+    if (selectedPost) {
+      const updatedPost = posts.find(post => post.id === selectedPost.id);
+      if (updatedPost) {
+        setSelectedPost(updatedPost);
+      }
+    }
+  }, [posts, selectedPost?.id]); // 모달창 안에서 업보트를 누르거나 좋아요를 누르면 최신화
+
   const filterPosts = () => {
     let filtered = posts;
     if (selectedCategories.length > 0) {
