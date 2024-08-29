@@ -1,16 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 interface MypagePresentationProps {
-  userName: string;
-  userEmail: string;
-  onUpdateUserName: (newName: string) => void;
+  id : string | null
 }
 
 const MypagePresentation: React.FC<MypagePresentationProps> = (props) => {
   return (
     <div>
-      <h2>프로필</h2>
+      <h2>사용자 아이디 : {props.id}</h2>
     </div>
   );
 };
