@@ -128,6 +128,9 @@ interface ProjectPresentationProps {
   newComment: string;
   setNewComment: (comment: string) => void;
   handleAddComment: (postId: number) => void;
+  isExpanded: boolean;
+  setIsExpanded: (isExpanded: boolean) => void;
+  toggleExpand: () => void;
 }
 
 const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
@@ -252,7 +255,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
             <VStack spacing={4} align="stretch">
               {/* Posts List */}
               <Box>
-                <Flex>
+                <Flex alignItems={"center"}>
                   <Heading size="md" mb={2}>
                     프로젝트 목록
                   </Heading>
@@ -752,10 +755,13 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 </WrapItem>
               ))}
             </Wrap>
-            <Text mt={4} fontWeight="bold">
-              조회수: {props.selectedPost?.views}
-            </Text>
-            <Flex>
+            <Flex mt={4}>
+              <Flex align="center" mr={4}>
+                <Icon as={FaRegEye} mr={1} color="gray.500" />
+                <Text fontSize="sm" color="gray.500">
+                  {props.selectedPost?.views}
+                </Text>
+              </Flex>
               <Flex
                 align="center"
                 mr={4}
@@ -787,33 +793,6 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
             </Flex>
             <Divider my={4} />
             <Text fontWeight="bold">댓글:</Text>
-            {props.selectedPost?.comments.map((comment) => (
-              <Box
-                key={comment.id}
-                mt={2}
-                p={2}
-                bg="gray.100"
-                borderRadius="md"
-              >
-                <Text fontWeight="bold">{comment.authorId}</Text>
-                <Text>{comment.content}</Text>
-                <Text fontSize="sm" color="gray.500">
-                  {comment.createdAt.toLocaleString()}
-                </Text>
-                <Button
-                  size="sm"
-                  variant={"ghost"}
-                  onClick={() =>
-                    props.handleCommentLike(
-                      props.selectedPost?.id || 0,
-                      comment.id
-                    )
-                  }
-                >
-                  ❤️ ({comment.likes})
-                </Button>
-              </Box>
-            ))}
             <Box mt={4}>
               <Textarea
                 value={props.newComment}
@@ -829,6 +808,50 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 댓글 작성
               </Button>
             </Box>
+            {props.selectedPost?.comments.map((comment) => (
+              <Box
+                key={comment.id}
+                mt={2}
+                p={2}
+                bg="gray.100"
+                borderRadius="md"
+              >
+                <Text fontWeight="bold">{comment.authorId}</Text>
+                <Flex mt={2}>
+                  <Text>{comment.content.length>50?(props.isExpanded?comment.content:comment.content.slice(0,50)):comment.content}
+                    <Button size="xs" variant="link" onClick={props.toggleExpand} ml={2}>
+                      {comment.content.length>50?(props.isExpanded?(<Text> 접기</Text>):(<Text> ...더보기</Text>)):null}
+                    </Button>
+                  </Text>
+                </Flex>
+                <Flex alignItems={"center"}>
+                  <Text fontSize="sm" color="gray.500">
+                    {comment.createdAt.toLocaleString()}
+                  </Text>
+                  <Spacer />
+                  <Button
+                    size="sm"
+                    variant={"ghost"}
+                    onClick={() =>
+                      props.handleCommentLike(
+                        props.selectedPost?.id || 0,
+                        comment.id
+                      )
+                    }
+                  >
+                    <Box
+                      bg="blue.100"
+                      borderRadius="md"
+                      alignItems={"center"}
+                      alignContent={"center"}
+                      p={2}
+                    >
+                      ❤️ {comment.likes}
+                    </Box>
+                  </Button>
+                </Flex>
+              </Box>
+            ))}
           </ModalBody>
 
           <ModalFooter>

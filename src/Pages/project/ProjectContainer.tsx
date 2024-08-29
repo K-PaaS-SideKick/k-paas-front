@@ -105,6 +105,8 @@ const ProjectContainer: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [sortByViews, setSortByViews] = useState<boolean>(false);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+
   useEffect(() => {
     filterPosts();
   }, [selectedCategories, posts, sortByViews]);
@@ -129,6 +131,10 @@ const ProjectContainer: React.FC = () => {
       filtered = [...filtered].sort((a, b) => b.views - a.views);
     }
     setFilteredPosts(filtered);
+  };
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
   };
 
   const onLogin = async () => {
@@ -322,6 +328,9 @@ const ProjectContainer: React.FC = () => {
       newComment={newComment}
       setNewComment={setNewComment}
       handleAddComment={handleAddComment}
+      isExpanded={isExpanded}
+      setIsExpanded={setIsExpanded}
+      toggleExpand={toggleExpand}
     />
   );
 };
