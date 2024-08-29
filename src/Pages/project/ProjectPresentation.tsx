@@ -52,7 +52,7 @@ import {
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
 import { FaRegCommentDots, FaHeart, FaArrowUp, FaRegEye } from "react-icons/fa";
-import { Navigate, NavigateFunction } from "react-router-dom";
+import { NavigateFunction } from "react-router-dom";
 import {
   ChevronDownIcon,
   SearchIcon,
@@ -160,6 +160,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
               color="white"
               mr={4}
               cursor="pointer"
+              onClick={() => props.navigate("/")}
             >
               KPAAS
             </Box>
