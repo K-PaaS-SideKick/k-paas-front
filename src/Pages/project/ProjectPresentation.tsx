@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Avatar,
+  Badge,
   Box,
   Button,
   Checkbox,
@@ -41,6 +42,7 @@ import {
   Wrap,
   WrapItem,
   useBreakpointValue,
+  Divider,
   Drawer,
   DrawerBody,
   DrawerHeader,
@@ -49,7 +51,7 @@ import {
   DrawerCloseButton,
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
-import { BiLogIn } from "react-icons/bi";
+import { FaRegCommentDots, FaHeart, FaArrowUp, FaRegEye } from "react-icons/fa";
 import { Navigate, NavigateFunction } from "react-router-dom";
 import {
   ChevronDownIcon,
@@ -60,12 +62,25 @@ import {
 } from "@chakra-ui/icons";
 import { User, MessageSquare, Lightbulb, Share2 } from "lucide-react";
 
+interface Comment {
+  id: number;
+  content: string;
+  authorId: string;
+  createdAt: Date;
+  likes: number;
+}
+
 interface Post {
   id: number;
   title: string;
   content: string;
+  authorId: string;
+  createdAt: Date;
   categories: string[];
   views: number;
+  upvotes: number;
+  likes: number;
+  comments: Comment[];
 }
 
 interface ProjectPresentationProps {
@@ -107,6 +122,12 @@ interface ProjectPresentationProps {
   isDrawerOpen: boolean;
   onDrawerOpen: () => void;
   onDrawerClose: () => void;
+  handleUpvote: (postId: number) => void;
+  handleLike: (postId: number) => void;
+  handleCommentLike: (postId: number, commentId: number) => void;
+  newComment: string;
+  setNewComment: (comment: string) => void;
+  handleAddComment: (postId: number) => void;
 }
 
 const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
@@ -130,7 +151,13 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
       >
         <Flex align="center" justify="space-between">
           <Flex align="center" flex={1}>
-            <Box fontWeight="bold" fontSize="xl" color="white" mr={4}>
+            <Box
+              fontWeight="bold"
+              fontSize="xl"
+              color="white"
+              mr={4}
+              cursor="pointer"
+            >
               KPAAS
             </Box>
             <InputGroup maxW={isMobile ? "60%" : "400px"}>
@@ -181,8 +208,18 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                       colorScheme="blue.500"
                     />
                     <MenuList borderRadius={"20px"}>
-                      <MenuItem borderRadius={"15px"} onClick={() => props.navigate("/mypage")}>마이페이지</MenuItem>
-                      <MenuItem borderRadius={"15px"} onClick={() => props.navigate("/settings")}>설정</MenuItem>
+                      <MenuItem
+                        borderRadius={"15px"}
+                        onClick={() => props.navigate("/mypage")}
+                      >
+                        마이페이지
+                      </MenuItem>
+                      <MenuItem
+                        borderRadius={"15px"}
+                        onClick={() => props.navigate("/settings")}
+                      >
+                        설정
+                      </MenuItem>
                       <MenuItem borderRadius={"15px"} onClick={props.onLogout}>
                         <TbLogout />
                         로그아웃
@@ -215,42 +252,100 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
             <VStack spacing={4} align="stretch">
               {/* Posts List */}
               <Box>
-                <Heading size="md" mb={2}>
-                  Product 목록
-                </Heading>
-                <Button mb={4} onClick={props.toggleSortByViews}>
-                  {props.sortByViews ? "기본 정렬" : "조회수순 정렬"}
-                </Button>
-                {props.posts.map((post) => (
-                  <Box
-                    key={post.id}
-                    p={4}
-                    shadow="md"
-                    borderWidth="1px"
-                    mb={4}
-                    onClick={() => props.handlePostClick(post)}
-                    cursor="pointer"
-                  >
-                    <Heading size="sm">{post.title}</Heading>
-                    <Wrap mt={2}>
-                      {post.categories.map((category) => (
-                        <WrapItem key={category}>
-                          <Button
-                            size="xs"
-                            colorScheme="blue"
-                            variant="outline"
-                            minWidth="70px"
+                <Flex>
+                  <Heading size="md" mb={2}>
+                    프로젝트 목록
+                  </Heading>
+                  <Spacer />
+                  <Button mb={4} onClick={props.toggleSortByViews}>
+                    {props.sortByViews ? "기본 정렬" : "조회수순 정렬"}
+                  </Button>
+                </Flex>
+                {props.posts.length === 0 ? (
+                  <Text align="center" mt={4} color="gray.500">
+                    해당되는 프로젝트가 없습니다.
+                  </Text>
+                ) : (
+                  props.posts.map((post) => (
+                    <Box
+                      key={post.id}
+                      p={4}
+                      shadow="md"
+                      borderWidth="1px"
+                      mb={4}
+                      onClick={() => props.handlePostClick(post)}
+                      cursor="pointer"
+                      borderRadius="lg"
+                      bg="white"
+                    >
+                      <Flex direction="column">
+                        <Heading size="sm" mb={2}>
+                          {post.title}
+                        </Heading>
+                        <Wrap mb={4}>
+                          {post.categories.map((category) => (
+                            <WrapItem key={category}>
+                              <Badge colorScheme="blue" mr={1}>
+                                {category}
+                              </Badge>
+                            </WrapItem>
+                          ))}
+                        </Wrap>
+                        <Text fontSize="sm" color="gray.500" mb={4}>
+                          {post.content.length > 100
+                            ? `${post.content.slice(0, 100)}...더보기`
+                            : post.content}
+                        </Text>
+                        <Flex align="center">
+                          <Flex align="center" mr={4}>
+                            <Icon
+                              as={FaRegCommentDots}
+                              mr={1}
+                              color="gray.500"
+                            />
+                            <Text fontSize="sm" color="gray.500">
+                              {post.comments.length}
+                            </Text>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            mr={4}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              props.handleLike(post.id || 0);
+                            }}
                           >
-                            {category}
-                          </Button>
-                        </WrapItem>
-                      ))}
-                    </Wrap>
-                    <Text mt={2} fontSize="sm" color="gray.500">
-                      조회수: {post.views}
-                    </Text>
-                  </Box>
-                ))}
+                            <Icon as={FaHeart} mr={1} color="red.500" />
+                            <Text fontSize="sm" color="gray.500">
+                              {post.likes}
+                            </Text>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            mr={4}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              props.handleUpvote(post.id || 0);
+                            }}
+                          >
+                            <Icon as={FaArrowUp} mr={1} color="gray.500" />
+                            <Text fontSize="sm" color="gray.500">
+                              {post.upvotes}
+                            </Text>
+                          </Flex>
+                          <Spacer />
+                          <Flex align="center">
+                            <Icon as={FaRegEye} mr={1} color="gray.500" />
+                            <Text fontSize="sm" color="gray.500">
+                              {post.views}
+                            </Text>
+                          </Flex>
+                        </Flex>
+                        <Spacer />
+                      </Flex>
+                    </Box>
+                  ))
+                )}
               </Box>
             </VStack>
           </GridItem>
@@ -322,7 +417,11 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
       </Container>
 
       {/* Drawer for mobile */}
-      <Drawer isOpen={props.isDrawerOpen} placement="right" onClose={props.onDrawerClose}>
+      <Drawer
+        isOpen={props.isDrawerOpen}
+        placement="right"
+        onClose={props.onDrawerClose}
+      >
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
@@ -427,8 +526,18 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                     colorScheme="blue.500"
                   />
                   <MenuList borderRadius={"20px"}>
-                    <MenuItem borderRadius={"15px"} onClick={() => props.navigate("/mypage")}>마이페이지</MenuItem>
-                    <MenuItem borderRadius={"15px"} onClick={() => props.navigate("/settings")}>설정</MenuItem>
+                    <MenuItem
+                      borderRadius={"15px"}
+                      onClick={() => props.navigate("/mypage")}
+                    >
+                      마이페이지
+                    </MenuItem>
+                    <MenuItem
+                      borderRadius={"15px"}
+                      onClick={() => props.navigate("/settings")}
+                    >
+                      설정
+                    </MenuItem>
                     <MenuItem borderRadius={"15px"} onClick={props.onLogout}>
                       <TbLogout />
                       로그아웃
@@ -443,7 +552,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 <IconButton
                   aria-label="New Post"
                   icon={<EditIcon />}
-                  colorScheme="blue"
+                  variant="ghost"
                   onClick={props.onWritePostModalOpen}
                 />
               </>
@@ -626,6 +735,12 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
           <ModalBody>
             <Text>{props.selectedPost?.content}</Text>
             <Text mt={4} fontWeight="bold">
+              작성자: {props.selectedPost?.authorId}
+            </Text>
+            <Text>
+              작성 시간: {props.selectedPost?.createdAt.toLocaleString()}
+            </Text>
+            <Text mt={4} fontWeight="bold">
               카테고리:
             </Text>
             <Wrap mt={2}>
@@ -638,9 +753,84 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
               ))}
             </Wrap>
             <Text mt={4} fontWeight="bold">
-              조회수: {(props.selectedPost?.views ?? 0) + 1}
+              조회수: {props.selectedPost?.views}
             </Text>
+            <Flex>
+              <Flex
+                align="center"
+                mr={4}
+                cursor="pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  props.handleLike(props.selectedPost?.id || 0);
+                }}
+              >
+                <Icon as={FaHeart} mr={1} color="red.500" />
+                <Text fontSize="sm" color="gray.500">
+                  {props.selectedPost?.likes}
+                </Text>
+              </Flex>
+              <Flex
+                align="center"
+                mr={4}
+                cursor="pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  props.handleUpvote(props.selectedPost?.id || 0);
+                }}
+              >
+                <Icon as={FaArrowUp} mr={1} color="gray.500" />
+                <Text fontSize="sm" color="gray.500">
+                  {props.selectedPost?.upvotes}
+                </Text>
+              </Flex>
+            </Flex>
+            <Divider my={4} />
+            <Text fontWeight="bold">댓글:</Text>
+            {props.selectedPost?.comments.map((comment) => (
+              <Box
+                key={comment.id}
+                mt={2}
+                p={2}
+                bg="gray.100"
+                borderRadius="md"
+              >
+                <Text fontWeight="bold">{comment.authorId}</Text>
+                <Text>{comment.content}</Text>
+                <Text fontSize="sm" color="gray.500">
+                  {comment.createdAt.toLocaleString()}
+                </Text>
+                <Button
+                  size="sm"
+                  variant={"ghost"}
+                  onClick={() =>
+                    props.handleCommentLike(
+                      props.selectedPost?.id || 0,
+                      comment.id
+                    )
+                  }
+                >
+                  ❤️ ({comment.likes})
+                </Button>
+              </Box>
+            ))}
+            <Box mt={4}>
+              <Textarea
+                value={props.newComment}
+                onChange={(e) => props.setNewComment(e.target.value)}
+                placeholder="댓글을 입력하세요"
+              />
+              <Button
+                mt={2}
+                onClick={() =>
+                  props.handleAddComment(props.selectedPost?.id || 0)
+                }
+              >
+                댓글 작성
+              </Button>
+            </Box>
           </ModalBody>
+
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={props.onPostModalClose}>
               닫기

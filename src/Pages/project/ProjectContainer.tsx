@@ -4,19 +4,76 @@ import { useDisclosure } from "@chakra-ui/react";
 import ProjectPresentation from "./ProjectPresentation";
 import { useAppContext } from "../../AppContext";
 
+interface Comment {
+  id: number;
+  content: string;
+  authorId: string;
+  createdAt: Date;
+  likes: number;
+}
+
 interface Post {
   id: number;
   title: string;
   content: string;
+  authorId: string;
+  createdAt: Date;
   categories: string[];
   views: number;
+  upvotes: number;
+  likes: number;
+  comments: Comment[];
 }
 
 const dummyPosts: Post[] = [
-  { id: 1, title: "First Post", content: "엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 ", categories: ["Python"], views: 100 },
-  { id: 2, title: "Second Post", content: "메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 메가커피 아샷추 맛있네 ", categories: ["Java", "머신러닝"], views: 80 },
-  { id: 3, title: "Third Post", content: "Third", categories: ["JavaScript", "웹 개발"], views: 120 },
-  { id: 4, title: "Fourth Post", content: "네 번째", categories: ["C++", "머신러닝"], views: 90 },
+  {
+    id: 1,
+    title: "First Post",
+    content: "엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 ",
+    authorId: "user1",
+    createdAt: new Date(),
+    categories: ["Python" ,"C++", "머신러닝"],
+    views: 10,
+    upvotes: 0,
+    likes: 15,
+    comments: []
+  },
+  {
+    id: 2,
+    title: "Second Post",
+    content: "ㅋㅋㅋㅋㅋㅋㅋㅋㅋ",
+    authorId: "user2",
+    createdAt: new Date(),
+    categories: ["Python"],
+    views: 20,
+    upvotes: 5,
+    likes: 3,
+    comments: []
+  },
+  {
+    id: 3,
+    title: "Third Post",
+    content: "제발 살려줘",
+    authorId: "user1",
+    createdAt: new Date(),
+    categories: ["Java"],
+    views: 5,
+    upvotes: 200,
+    likes: 2,
+    comments: []
+  },
+  {
+    id: 4,
+    title: "Fourth Post",
+    content: "응애",
+    authorId: "user4",
+    createdAt: new Date(),
+    categories: ["웹 개발"],
+    views: 8,
+    upvotes: 10,
+    likes: 1,
+    comments: []
+  },
 ];
 
 const categories = ["머신러닝", "C++", "Java", "Python", "JavaScript", "웹 개발"];
@@ -39,6 +96,7 @@ const ProjectContainer: React.FC = () => {
   const [error, setError] = useState<string>("");
 
   const [posts, setPosts] = useState<Post[]>(dummyPosts);
+  const [newComment, setNewComment] = useState("");
   const [filteredPosts, setFilteredPosts] = useState<Post[]>(dummyPosts);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [newPostTitle, setNewPostTitle] = useState("");
@@ -110,12 +168,17 @@ const ProjectContainer: React.FC = () => {
     }
 
     if (newPostTitle && newPostContent && newPostCategories.length > 0) {
-      const newPost = {
+      const newPost: Post = {
         id: posts.length + 1,
         title: newPostTitle,
         content: newPostContent,
+        authorId: context.userId || "",
+        createdAt: new Date(),
         categories: newPostCategories,
-        views: 0
+        views: 0,
+        upvotes: 0,
+        likes: 0,
+        comments: []
       };
       setPosts([newPost, ...posts]);
       setNewPostTitle("");
@@ -125,6 +188,61 @@ const ProjectContainer: React.FC = () => {
     } else {
       alert("제목, 내용을 입력하고 최소한 하나의 카테고리를 선택해주세요.");
     }
+  };
+
+  const handleUpvote = (postId: number) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
+      )
+    );
+  };
+
+  const handleLike = (postId: number) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId ? { ...post, likes: post.likes + 1 } : post
+      )
+    );
+  };
+
+  const handleAddComment = (postId: number) => {
+    if (newComment.trim() === "") return;
+
+    const newCommentObj: Comment = {
+      id: Date.now(),
+      authorId: context.userId || "anonymous",
+      content: newComment,
+      createdAt: new Date(),
+      likes: 0
+    };
+
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId
+          ? { ...post, comments: [...post.comments, newCommentObj] }
+          : post
+      )
+    );
+
+    setNewComment("");
+  };
+
+  const handleCommentLike = (postId: number, commentId: number) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.map(comment =>
+                comment.id === commentId
+                  ? { ...comment, likes: comment.likes + 1 }
+                  : comment
+              )
+            }
+          : post
+      )
+    );
   };
 
   const handlePostClick = (post: Post) => {
@@ -189,6 +307,12 @@ const ProjectContainer: React.FC = () => {
       isWritePostModalOpen={isWritePostModalOpen}
       onWritePostModalOpen={onWritePostModalOpen}
       onWritePostModalClose={handleWritePostModalClose}  // 수정된 함수 사용
+      handleUpvote={handleUpvote}
+      handleLike={handleLike}
+      handleCommentLike={handleCommentLike}
+      newComment={newComment}
+      setNewComment={setNewComment}
+      handleAddComment={handleAddComment}
     />
   );
 };
