@@ -185,7 +185,7 @@ const MypagePresentation: React.FC<MypagePresentationProps> = (props) => {
                 src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
               />
               <VStack alignItems="flex-start" spacing={0}>
-                <Text fontWeight="bold">{props.id}</Text> {/* 아이디 텍스트 */}
+                <Text fontWeight="bold">{props.id}</Text>
                 <Text fontSize="sm" color="gray.500">
                   이건영
                 </Text>
