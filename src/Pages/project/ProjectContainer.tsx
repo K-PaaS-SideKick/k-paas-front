@@ -105,9 +105,20 @@ const ProjectContainer: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [sortByViews, setSortByViews] = useState<boolean>(false);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+
   useEffect(() => {
     filterPosts();
   }, [selectedCategories, posts, sortByViews]);
+
+  useEffect(() => {
+    if (selectedPost) {
+      const updatedPost = posts.find(post => post.id === selectedPost.id);
+      if (updatedPost) {
+        setSelectedPost(updatedPost);
+      }
+    }
+  }, [posts, selectedPost?.id]); // 모달창 안에서 업보트를 누르거나 좋아요를 누르면 최신화
 
   const filterPosts = () => {
     let filtered = posts;
@@ -120,6 +131,10 @@ const ProjectContainer: React.FC = () => {
       filtered = [...filtered].sort((a, b) => b.views - a.views);
     }
     setFilteredPosts(filtered);
+  };
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
   };
 
   const onLogin = async () => {
@@ -313,6 +328,9 @@ const ProjectContainer: React.FC = () => {
       newComment={newComment}
       setNewComment={setNewComment}
       handleAddComment={handleAddComment}
+      isExpanded={isExpanded}
+      setIsExpanded={setIsExpanded}
+      toggleExpand={toggleExpand}
     />
   );
 };
