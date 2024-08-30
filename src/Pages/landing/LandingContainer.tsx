@@ -77,7 +77,7 @@ const LandingContainer: React.FC = () => {
   return (
     <LandingPresentation
       navigate={navigate}
-      post={dummyPosts}
+      post={posts}
       handlePostClick={handlePostClick}
       isPostModalOpen={isPostModalOpen}
       onPostModalClose={onPostModalClose}
