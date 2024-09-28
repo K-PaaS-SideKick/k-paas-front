@@ -3,6 +3,8 @@ import { LandingContainer } from "../Pages/landing";
 import { ProjectContainer } from "../Pages/project";
 import { CommunityContainer } from "../Pages/community";
 import { UserContainer } from "../Pages/user";
+import { MypageContainer } from "../Pages/mypage";
+import { SettingsContainer } from "../Pages/settings";
 
 export const routes: RouteObject[] = [
   {
@@ -25,6 +27,14 @@ export const routes: RouteObject[] = [
         element: <UserContainer />,
       },
     ],
+  },
+  {
+    path: "mypage",
+    element: <MypageContainer />,
+  },
+  {
+    path: "settings",
+    element: <SettingsContainer />,
   },
   {
     path: "*",

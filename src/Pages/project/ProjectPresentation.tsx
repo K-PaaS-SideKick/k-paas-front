@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Avatar,
+  Badge,
   Box,
   Button,
   Checkbox,
@@ -10,6 +11,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
+  Image,
   VStack,
   Text,
   useDisclosure,
@@ -39,29 +41,55 @@ import {
   HStack,
   Wrap,
   WrapItem,
+  useBreakpointValue,
+  Divider,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
-import { BiLogIn } from "react-icons/bi";
+import { FaRegCommentDots, FaHeart, FaArrowUp, FaRegEye } from "react-icons/fa";
 import { NavigateFunction } from "react-router-dom";
 import {
   ChevronDownIcon,
   SearchIcon,
   BellIcon,
   EditIcon,
+  HamburgerIcon,
 } from "@chakra-ui/icons";
+import { User, MessageSquare, Lightbulb, Share2 } from "lucide-react";
+
+interface Comment {
+  id: number;
+  content: string;
+  authorId: string;
+  createdAt: Date;
+  likes: number;
+}
 
 interface Post {
   id: number;
   title: string;
   content: string;
+  authorId: string;
+  createdAt: Date;
   categories: string[];
   views: number;
+  upvotes: number;
+  likes: number;
+  comments: Comment[];
 }
 
 interface ProjectPresentationProps {
   isLoginModalOpen: boolean;
   onLoginModalOpen: () => void;
   onLoginModalClose: () => void;
+  isRegisterModalOpen: boolean;
+  onRegisterModalOpen: () => void;
+  onRegisterModalClose: () => void;
   id: string | null;
   setId: (value: string | null) => void;
   password: string;
@@ -86,16 +114,31 @@ interface ProjectPresentationProps {
   isPostModalOpen: boolean;
   onPostModalClose: () => void;
   selectedPost: Post | null;
-  toggleSortByViews: () => void;
-  sortByViews: boolean;
+  sortCriteria: "views" | "upvotes" | "date";
+  toggleSortCriteria: (criteria: "views" | "upvotes" | "date") => void;
   isWritePostModalOpen: boolean;
   onWritePostModalOpen: () => void;
   onWritePostModalClose: () => void;
+  isDrawerOpen: boolean;
+  onDrawerOpen: () => void;
+  onDrawerClose: () => void;
+  handleUpvote: (postId: number) => void;
+  handleLike: (postId: number) => void;
+  handleCommentLike: (postId: number, commentId: number) => void;
+  newComment: string;
+  setNewComment: (comment: string) => void;
+  handleAddComment: (postId: number) => void;
+  isExpanded: boolean;
+  setIsExpanded: (isExpanded: boolean) => void;
+  toggleExpand: () => void;
+  getRelativeTime: (date: Date) => string;
 }
 
 const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
   const modalBg = useColorModeValue("white", "gray.800");
   const inputBg = useColorModeValue("gray.100", "gray.700");
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   return (
     <Box>
@@ -111,247 +154,324 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
         zIndex={1000}
       >
         <Flex align="center" justify="space-between">
-          <Flex align="center">
-            <Box fontWeight="bold" fontSize="xl" color="white" mr={4}>
+          <Flex align="center" flex={1}>
+            <Box
+              fontWeight="bold"
+              fontSize="xl"
+              color="white"
+              mr={4}
+              cursor="pointer"
+              onClick={() => props.navigate("/")}
+            >
               KPAAS
             </Box>
-            <InputGroup maxW="400px">
+            <InputGroup maxW={isMobile ? "60%" : "400px"}>
               <InputLeftElement pointerEvents="none">
                 <SearchIcon color="gray.300" />
               </InputLeftElement>
               <Input placeholder="검색하기" bg="white" />
             </InputGroup>
           </Flex>
-          <Flex align="center">
-            {props.isLoggedIn ? (
-              <Box>
-                <IconButton
-                  aria-label="Messages"
-                  icon={<BellIcon />}
-                  variant="ghost"
-                  color="white"
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                  mr={2}
-                />
-                <Button
-                  leftIcon={<EditIcon />}
-                  colorScheme="blue"
-                  variant="solid"
-                  onClick={props.onWritePostModalOpen}
-                  mr={4}
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                >
-                  새 포스트
-                </Button>
-                <Menu>
-                  <MenuButton
-                    as={Button}
+          {isMobile ? (
+            <IconButton
+              aria-label="Open menu"
+              icon={<HamburgerIcon />}
+              onClick={props.onDrawerOpen}
+              variant="ghost"
+              color="white"
+            />
+          ) : (
+            <Flex align="center">
+              {props.isLoggedIn ? (
+                <>
+                  <IconButton
+                    aria-label="Messages"
+                    icon={<BellIcon />}
                     variant="ghost"
-                    p={0}
-                    colorScheme="blue.500"
-                    _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                    transition="all 0.2s"
+                    color="white"
+                    mr={2}
+                  />
+                  <Button
+                    leftIcon={<EditIcon />}
+                    colorScheme="blue"
+                    variant="solid"
+                    onClick={props.onWritePostModalOpen}
+                    mr={4}
                   >
-                    <Avatar
-                      size="sm"
-                      src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+                    새 포스트
+                  </Button>
+                  <Menu>
+                    <MenuButton
+                      as={IconButton}
+                      icon={
+                        <Avatar
+                          size="sm"
+                          src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+                        />
+                      }
+                      variant="ghost"
+                      colorScheme="blue.500"
                     />
-                  </MenuButton>
-                  <MenuList borderRadius={"20px"}>
-                    <MenuItem
-                      textAlign={"center"}
-                      height="100px"
-                      borderRadius={"20px"}
-                      _hover={{
-                        transform: "translateY(-2px)",
-                        boxShadow: "lg",
-                      }}
-                      transition="all 0.2s"
-                    >
-                      <Avatar
-                        size="sm"
-                        src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
-                      />
-                      <Text ml={"2px"}>마이페이지</Text>
-                    </MenuItem>
-                    <MenuItem
-                      borderRadius={"20px"}
-                      onClick={props.onLogout}
-                      _hover={{
-                        transform: "translateY(-2px)",
-                        boxShadow: "lg",
-                      }}
-                      transition="all 0.2s"
-                    >
-                      <TbLogout />
-                      로그아웃
-                    </MenuItem>
-                  </MenuList>
-                </Menu>
-              </Box>
-            ) : (
-              <Box>
-                <Button
-                  borderRadius={"15px"}
-                  onClick={props.onLoginModalOpen}
-                  mr={"10px"}
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                >
-                  <BiLogIn />
-                  <Text ml="4px">로그인</Text>
-                </Button>
-                <Button
-                  borderRadius={"15px"}
-                  colorScheme="purple"
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                >
-                  회원가입
-                </Button>
-              </Box>
-            )}
-          </Flex>
-        </Flex>
-
-        <Modal
-          isOpen={props.isWritePostModalOpen}
-          onClose={props.onWritePostModalClose}
-        >
-          <ModalOverlay />
-          <ModalContent
-            bg="white"
-            borderRadius="lg"
-            boxShadow="lg"
-            p={6}
-            maxW="600px"
-          >
-            <ModalHeader
-              fontSize="lg"
-              fontWeight="bold"
-              color="gray.800"
-              textAlign="center"
-              mt={2}
-            >
-              새 게시글 작성
-            </ModalHeader>
-            <ModalCloseButton size="lg" />
-            <ModalBody>
-              <Input
-                placeholder="제목"
-                value={props.newPostTitle}
-                onChange={(e) => props.setNewPostTitle(e.target.value)}
-                mb={2}
-                width="100%"
-              />
-              <Textarea
-                placeholder="내용"
-                value={props.newPostContent}
-                onChange={(e) => props.setNewPostContent(e.target.value)}
-                mb={2}
-                width="100%"
-                height="300px"
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Flex align="center" justify="flex-end" width="100%" gap={2}>
-                <Menu closeOnSelect={false}>
-                  <MenuButton
-                    as={Button}
-                    rightIcon={<ChevronDownIcon />}
-                    minWidth="150px"
-                  >
-                    카테고리 선택
-                  </MenuButton>
-                  <MenuList>
-                    {props.categories.map((category) => (
+                    <MenuList borderRadius={"20px"}>
                       <MenuItem
-                        key={category}
-                        onClick={() =>
-                          props.handleNewPostCategoryClick(category)
-                        }
+                        borderRadius={"15px"}
+                        onClick={() => props.navigate("/mypage")}
                       >
-                        <Checkbox
-                          isChecked={props.newPostCategories.includes(category)}
-                          onChange={() =>
-                            props.handleNewPostCategoryClick(category)
-                          }
-                        >
-                          {category}
-                        </Checkbox>
+                        마이페이지
                       </MenuItem>
-                    ))}
-                  </MenuList>
-                </Menu>
-
-                <Button onClick={props.handleNewPost}>게시하기</Button>
-                <Button onClick={props.onWritePostModalClose}>취소</Button>
-              </Flex>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+                      <MenuItem
+                        borderRadius={"15px"}
+                        onClick={() => props.navigate("/settings")}
+                      >
+                        설정
+                      </MenuItem>
+                      <MenuItem borderRadius={"15px"} onClick={props.onLogout}>
+                        <TbLogout />
+                        로그아웃
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
+                </>
+              ) : (
+                <>
+                  <Button onClick={props.onLoginModalOpen} mr={2}>
+                    로그인
+                  </Button>
+                  <Button
+                    onClick={props.onRegisterModalOpen}
+                    colorScheme="purple"
+                  >
+                    회원가입
+                  </Button>
+                </>
+              )}
+            </Flex>
+          )}
+        </Flex>
       </Box>
 
       {/* Main Content */}
       <Container maxW="container.xl" marginTop="80px">
-        <Grid templateColumns="3fr 1fr" gap={6}>
+        <Grid templateColumns={isMobile ? "1fr" : "3fr 1fr"} gap={6}>
           <GridItem>
             <VStack spacing={4} align="stretch">
               {/* Posts List */}
               <Box>
-                <Heading size="md" mb={2}>
-                  Product 목록
-                </Heading>
-                <Button mb={4} onClick={props.toggleSortByViews}>
-                  {props.sortByViews ? "기본 정렬" : "조회수순 정렬"}
-                </Button>
-                {props.posts.map((post) => (
-                  <Box
-                    key={post.id}
-                    p={4}
-                    shadow="md"
-                    borderWidth="1px"
-                    mb={4}
-                    onClick={() => props.handlePostClick(post)}
-                    cursor="pointer"
-                  >
-                    <Heading size="sm">{post.title}</Heading>
-                    <Wrap mt={2}>
-                      {post.categories.map((category) => (
-                        <WrapItem key={category}>
-                          <Button
-                            size="xs"
-                            colorScheme="blue"
-                            variant="outline"
-                            minWidth="70px"
+                <Flex alignItems={"center"}>
+                  <Heading size="md" mb={2}>
+                    프로젝트 목록
+                  </Heading>
+                  <Spacer />
+                  <Menu>
+                    <MenuButton
+                      as={Button}
+                      rightIcon={<ChevronDownIcon />}
+                      mb={2}
+                    >
+                      {props.sortCriteria === "date" ? (
+                        <Text>날짜 순</Text>
+                      ) : props.sortCriteria === "views" ? (
+                        <Text>조휘수 순</Text>
+                      ) : (
+                        <Text>업보트 순</Text>
+                      )}
+                    </MenuButton>
+                    <MenuList>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("date")}
+                      >
+                        날짜 순
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("views")}
+                      >
+                        조회수 순
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("upvotes")}
+                      >
+                        업보트 순
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
+                </Flex>
+                {props.posts.length === 0 ? (
+                  <Text align="center" mt={4} color="gray.500">
+                    해당되는 프로젝트가 없습니다.
+                  </Text>
+                ) : (
+                  props.posts.map((post) => (
+                    <Box
+                      key={post.id}
+                      p={4}
+                      shadow="md"
+                      borderWidth="1px"
+                      mb={4}
+                      onClick={() => props.handlePostClick(post)}
+                      cursor="pointer"
+                      borderRadius="lg"
+                      bg="white"
+                    >
+                      <Flex direction="column">
+                        <Heading size="sm" mb={2}>
+                          {post.title}
+                        </Heading>
+                        <Wrap mb={4}>
+                          {post.categories.map((category) => (
+                            <WrapItem key={category}>
+                              <Badge colorScheme="blue" mr={1}>
+                                {category}
+                              </Badge>
+                            </WrapItem>
+                          ))}
+                        </Wrap>
+                        <Text fontSize="sm" color="gray.500" mb={4}>
+                          {post.content.length > 100
+                            ? `${post.content.slice(0, 100)}...더보기`
+                            : post.content}
+                        </Text>
+                        <Flex align="center">
+                          <Flex align="center" mr={4}>
+                            <Icon
+                              as={FaRegCommentDots}
+                              mr={1}
+                              color="gray.500"
+                            />
+                            <Text fontSize="sm" color="gray.500">
+                              {post.comments.length}
+                            </Text>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            mr={4}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              props.handleLike(post.id || 0);
+                            }}
                           >
-                            {category}
-                          </Button>
-                        </WrapItem>
-                      ))}
-                    </Wrap>
-                    <Text mt={2} fontSize="sm" color="gray.500">
-                      조회수: {post.views}
-                    </Text>
-                  </Box>
-                ))}
+                            <Icon as={FaHeart} mr={1} color="red.500" />
+                            <Text fontSize="sm" color="gray.500">
+                              {post.likes}
+                            </Text>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            mr={4}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              props.handleUpvote(post.id || 0);
+                            }}
+                          >
+                            <Icon as={FaArrowUp} mr={1} color="gray.500" />
+                            <Text fontSize="sm" color="gray.500">
+                              {post.upvotes}
+                            </Text>
+                          </Flex>
+                          <Spacer />
+                          <Flex align="center">
+                            <Icon as={FaRegEye} mr={1} color="gray.500" />
+                            <Text fontSize="sm" color="gray.500">
+                              {post.views}
+                            </Text>
+                          </Flex>
+                        </Flex>
+                        <Spacer />
+                      </Flex>
+                    </Box>
+                  ))
+                )}
               </Box>
             </VStack>
           </GridItem>
 
-          <GridItem>
-            <VStack
-              spacing={4}
-              align="stretch"
-              position="sticky"
-              top="80px"
-              border="1px"
-              borderColor="gray.200"
-              borderRadius="md"
-              p={4}
-            >
+          {!isMobile && (
+            <GridItem>
+              <VStack
+                spacing={100}
+                align="stretch"
+                position="sticky"
+                top="80px"
+                border="1px"
+                borderColor="gray.200"
+                borderRadius="md"
+                p={4}
+              >
+                {/* Categories */}
+                <Box>
+                  <Heading size="md" mb={2}>
+                    카테고리
+                  </Heading>
+                  <SimpleGrid columns={2} spacing={2}>
+                    {props.categories.map((category) => (
+                      <Button
+                        key={category}
+                        onClick={() => props.handleCategoryClick(category)}
+                        colorScheme={
+                          props.selectedCategories.includes(category)
+                            ? "blue"
+                            : "gray"
+                        }
+                        minWidth="100px"
+                        textAlign="center"
+                      >
+                        {category}
+                      </Button>
+                    ))}
+                  </SimpleGrid>
+                </Box>
+
+                {/* Popular Posts */}
+                <Box>
+                  <Heading size="md" mb={2}>
+                    인기 글
+                  </Heading>
+                  <Stack spacing={2}>
+                    <Text fontWeight="bold">커뮤니티 인기글</Text>
+                    {props.posts
+                      .sort((a, b) => {
+                        // 선택된 정렬 기준에 맞게 정렬 수행
+                        if (props.sortCriteria === "views") {
+                          return b.views - a.views;
+                        } else if (props.sortCriteria === "upvotes") {
+                          return b.upvotes - a.upvotes;
+                        } else if (props.sortCriteria === "date") {
+                          return b.createdAt.getTime() - a.createdAt.getTime();
+                        }
+                        return 0;
+                      })
+                      .slice(0, 5)
+                      .map((post) => (
+                        <Text
+                          key={post.id}
+                          onClick={() => props.handlePostClick(post)}
+                          cursor="pointer"
+                          width="100%"
+                          textAlign="left"
+                          isTruncated
+                        >
+                          {post.title} (조회수: {post.views})
+                        </Text>
+                      ))}
+                  </Stack>
+                </Box>
+              </VStack>
+            </GridItem>
+          )}
+        </Grid>
+      </Container>
+
+      {/* Drawer for mobile */}
+      <Drawer
+        isOpen={props.isDrawerOpen}
+        placement="right"
+        onClose={props.onDrawerClose}
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader>메뉴</DrawerHeader>
+          <DrawerBody>
+            <VStack spacing={100} align="stretch">
               {/* Categories */}
               <Box>
                 <Heading size="md" mb={2}>
@@ -361,7 +481,9 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                   {props.categories.map((category) => (
                     <Button
                       key={category}
-                      onClick={() => props.handleCategoryClick(category)}
+                      onClick={() => {
+                        props.handleCategoryClick(category);
+                      }}
                       colorScheme={
                         props.selectedCategories.includes(category)
                           ? "blue"
@@ -384,12 +506,25 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 <Stack spacing={2}>
                   <Text fontWeight="bold">커뮤니티 인기글</Text>
                   {props.posts
-                    .sort((a, b) => b.views - a.views)
-                    .slice(0, 5)
+                    .sort((a, b) => {
+                      // 선택된 정렬 기준에 따라 정렬 수행
+                      if (props.sortCriteria === "views") {
+                        return b.views - a.views;
+                      } else if (props.sortCriteria === "upvotes") {
+                        return b.upvotes - a.upvotes;
+                      } else if (props.sortCriteria === "date") {
+                        return b.createdAt.getTime() - a.createdAt.getTime();
+                      }
+                      return 0;
+                    })
+                    .slice(0, 5) // 상위 5개의 인기 글만 표시
                     .map((post) => (
                       <Text
                         key={post.id}
-                        onClick={() => props.handlePostClick(post)}
+                        onClick={() => {
+                          props.handlePostClick(post);
+                          props.onDrawerClose(); // 인기 글 클릭 시 Drawer 닫기
+                        }}
                         cursor="pointer"
                         width="100%"
                         textAlign="left"
@@ -401,9 +536,84 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 </Stack>
               </Box>
             </VStack>
-          </GridItem>
-        </Grid>
-      </Container>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Mobile Bottom Bar */}
+      {isMobile && (
+        <Box
+          position="fixed"
+          bottom={0}
+          left={0}
+          right={0}
+          bg="white"
+          boxShadow="0 -2px 10px rgba(0,0,0,0.1)"
+          zIndex={1000}
+        >
+          <Flex justify="space-around" py={2}>
+            {!props.isLoggedIn ? (
+              <>
+                <Button onClick={props.onLoginModalOpen} size="sm">
+                  로그인
+                </Button>
+                <Button
+                  onClick={props.onRegisterModalOpen}
+                  size="sm"
+                  colorScheme="purple"
+                >
+                  회원가입
+                </Button>
+              </>
+            ) : (
+              <>
+                <Menu>
+                  <MenuButton
+                    as={IconButton}
+                    icon={
+                      <Avatar
+                        size="sm"
+                        src="https://i.namu.wiki/i/geGngQMnvmK2g3wuKU4O1uNs8Ix1HXQULk9PrnT57lHOlU4AxL9qsNCYXOOY9DIqPWtXnphq8G6NzCcvzv-ppQ.webp"
+                      />
+                    }
+                    variant="ghost"
+                    colorScheme="blue.500"
+                  />
+                  <MenuList borderRadius={"20px"}>
+                    <MenuItem
+                      borderRadius={"15px"}
+                      onClick={() => props.navigate("/mypage")}
+                    >
+                      마이페이지
+                    </MenuItem>
+                    <MenuItem
+                      borderRadius={"15px"}
+                      onClick={() => props.navigate("/settings")}
+                    >
+                      설정
+                    </MenuItem>
+                    <MenuItem borderRadius={"15px"} onClick={props.onLogout}>
+                      <TbLogout />
+                      로그아웃
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+                <IconButton
+                  aria-label="Messages"
+                  icon={<BellIcon />}
+                  variant="ghost"
+                />
+                <IconButton
+                  aria-label="New Post"
+                  icon={<EditIcon />}
+                  variant="ghost"
+                  onClick={props.onWritePostModalOpen}
+                />
+              </>
+            )}
+          </Flex>
+        </Box>
+      )}
 
       {/* Login Modal */}
       <Modal
@@ -493,38 +703,343 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
         </ModalContent>
       </Modal>
 
+      {/* Register Modal */}
+      <Modal
+        isOpen={props.isRegisterModalOpen}
+        onClose={props.onRegisterModalClose}
+        isCentered
+        motionPreset="slideInBottom"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader textAlign="center">KPaaS 가입</ModalHeader>
+          <ModalBody>
+            <Text textAlign="center" mb={4}>
+              KPaaS에 오신 것을 환영합니다.
+            </Text>
+            <VStack spacing={3} align="stretch">
+              <Button leftIcon={<Icon as={User} />} variant="outline" size="lg">
+                멋진 프로젝트를 찾고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={MessageSquare} />}
+                variant="outline"
+                size="lg"
+              >
+                프로젝트에 대한 피드백을 받고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={Lightbulb} />}
+                variant="outline"
+                size="lg"
+              >
+                다양한 영감을 얻고 싶어요
+              </Button>
+              <Button
+                leftIcon={<Icon as={Share2} />}
+                variant="outline"
+                size="lg"
+              >
+                프로젝트를 사람들에게 알리고 싶어요
+              </Button>
+            </VStack>
+          </ModalBody>
+          <ModalFooter flexDirection="column" gap={2}>
+            <Button
+              colorScheme="gray"
+              width="100%"
+              leftIcon={
+                <Image
+                  boxSize="20px"
+                  src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+                  alt="Google logo"
+                />
+              }
+            >
+              구글 계정으로 가입
+            </Button>
+
+            <Button
+              colorScheme="gray"
+              width="100%"
+              leftIcon={
+                <Image
+                  boxSize="20px"
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Font_Awesome_5_brands_github.svg/991px-Font_Awesome_5_brands_github.svg.png"
+                  alt="Google logo"
+                />
+              }
+            >
+              GitHub 계정으로 가입
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       {/* Post Modal */}
       <Modal
         isOpen={props.isPostModalOpen}
         onClose={props.onPostModalClose}
         size="xl"
       >
-        <ModalOverlay />
-        <ModalContent>
+        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
+        {props.selectedPost && (
+          <Flex
+            position="absolute"
+            top="-40px"
+            left="20px"
+            zIndex="9999"
+            backgroundColor="transparent"
+            p={3}
+            borderRadius="lg"
+            boxShadow="lg"
+            alignItems="center"
+          >
+            <Avatar
+              size="sm"
+              mr={3}
+              src="https://your-avatar-url.com/avatar.png"
+            />
+            <Box>
+              <Text fontWeight="bold" fontSize="md" color="white">
+                {props.selectedPost.authorId}님의 아티클
+              </Text>
+              <Text fontSize="sm" color="white">
+                {props.getRelativeTime(new Date(props.selectedPost?.createdAt))}
+              </Text>
+            </Box>
+          </Flex>
+        )}
+        <ModalContent maxW="60%" minH="60vh" overflowY="auto">
           <ModalHeader>{props.selectedPost?.title}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text>{props.selectedPost?.content}</Text>
-            <Text mt={4} fontWeight="bold">
-              카테고리:
+            <Text>
+              {props.selectedPost?.createdAt.toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </Text>
             <Wrap mt={2}>
               {props.selectedPost?.categories.map((category) => (
                 <WrapItem key={category}>
                   <Button size="xs" colorScheme="blue" variant="outline">
-                    {category}
+                    #{category}
                   </Button>
                 </WrapItem>
               ))}
             </Wrap>
-            <Text mt={4} fontWeight="bold">
-              조회수: {(props.selectedPost?.views ?? 0) + 1}
-            </Text>
+            <Flex alignItems="center" textAlign="center">
+              <Text fontWeight="bold" lineHeight="1.5">
+                작성자: {props.selectedPost?.authorId}
+              </Text>
+              <Text lineHeight="1.5" ml={2}>
+                {" "}
+                {/* `ml`로 간격을 추가해줌 */}
+                {props.selectedPost?.createdAt
+                  ? props.getRelativeTime(
+                      new Date(props.selectedPost?.createdAt)
+                    )
+                  : "시간 정보 없음"}
+              </Text>
+            </Flex>
+            <Flex mt={4}>
+              <Flex align="center" mr={4}>
+                <Icon as={FaRegEye} mr={1} color="gray.500" />
+                <Text fontSize="sm" color="gray.500">
+                  {props.selectedPost?.views}
+                </Text>
+              </Flex>
+              <Flex
+                align="center"
+                mr={4}
+                cursor="pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  props.handleLike(props.selectedPost?.id || 0);
+                }}
+              >
+                <Icon as={FaHeart} mr={1} color="red.500" />
+                <Text fontSize="sm" color="gray.500">
+                  {props.selectedPost?.likes}
+                </Text>
+              </Flex>
+              <Flex
+                align="center"
+                mr={4}
+                cursor="pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  props.handleUpvote(props.selectedPost?.id || 0);
+                }}
+              >
+                <Icon as={FaArrowUp} mr={1} color="gray.500" />
+                <Text fontSize="sm" color="gray.500">
+                  {props.selectedPost?.upvotes}
+                </Text>
+              </Flex>
+            </Flex>
+            <Divider my={4} />
+            <Text fontWeight="bold">댓글:</Text>
+            <Box mt={4}>
+              <Textarea
+                value={props.newComment}
+                onChange={(e) => props.setNewComment(e.target.value)}
+                placeholder="댓글을 입력하세요"
+              />
+              <Button
+                mt={2}
+                onClick={() =>
+                  props.handleAddComment(props.selectedPost?.id || 0)
+                }
+              >
+                댓글 작성
+              </Button>
+            </Box>
+            {props.selectedPost?.comments.map((comment) => (
+              <Box
+                key={comment.id}
+                mt={2}
+                p={2}
+                bg="gray.100"
+                borderRadius="md"
+              >
+                <Text fontWeight="bold">{comment.authorId}</Text>
+                <Flex mt={2}>
+                  <Text>
+                    {comment.content.length > 50
+                      ? props.isExpanded
+                        ? comment.content
+                        : comment.content.slice(0, 50)
+                      : comment.content}
+                    <Button
+                      size="xs"
+                      variant="link"
+                      onClick={props.toggleExpand}
+                      ml={2}
+                    >
+                      {comment.content.length > 50 ? (
+                        props.isExpanded ? (
+                          <Text> 접기</Text>
+                        ) : (
+                          <Text> ...더보기</Text>
+                        )
+                      ) : null}
+                    </Button>
+                  </Text>
+                </Flex>
+                <Flex alignItems={"center"}>
+                  <Text fontSize="sm" color="gray.500">
+                    {comment.createdAt.toLocaleString()}
+                  </Text>
+                  <Spacer />
+                  <Button
+                    size="sm"
+                    variant={"ghost"}
+                    onClick={() =>
+                      props.handleCommentLike(
+                        props.selectedPost?.id || 0,
+                        comment.id
+                      )
+                    }
+                  >
+                    <Box
+                      bg="blue.100"
+                      borderRadius="md"
+                      alignItems={"center"}
+                      alignContent={"center"}
+                      p={2}
+                    >
+                      ❤️ {comment.likes}
+                    </Box>
+                  </Button>
+                </Flex>
+              </Box>
+            ))}
           </ModalBody>
+
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={props.onPostModalClose}>
               닫기
             </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Write Posts Modal */}
+      <Modal
+        isOpen={props.isWritePostModalOpen}
+        onClose={props.onWritePostModalClose}
+      >
+        <ModalOverlay />
+        <ModalContent
+          bg="white"
+          borderRadius="lg"
+          boxShadow="lg"
+          p={6}
+          maxW="600px"
+        >
+          <ModalHeader
+            fontSize="lg"
+            fontWeight="bold"
+            color="gray.800"
+            textAlign="center"
+            mt={2}
+          >
+            새 게시글 작성
+          </ModalHeader>
+          <ModalCloseButton size="lg" />
+          <ModalBody>
+            <Input
+              placeholder="제목"
+              value={props.newPostTitle}
+              onChange={(e) => props.setNewPostTitle(e.target.value)}
+              mb={2}
+              width="100%"
+            />
+            <Textarea
+              placeholder="내용"
+              value={props.newPostContent}
+              onChange={(e) => props.setNewPostContent(e.target.value)}
+              mb={2}
+              width="100%"
+              height="300px"
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Flex align="center" justify="flex-end" width="100%" gap={2}>
+              <Menu closeOnSelect={false}>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  minWidth="150px"
+                >
+                  카테고리 선택
+                </MenuButton>
+                <MenuList>
+                  {props.categories.map((category) => (
+                    <MenuItem
+                      key={category}
+                      onClick={() => props.handleNewPostCategoryClick(category)}
+                    >
+                      <Checkbox
+                        isChecked={props.newPostCategories.includes(category)}
+                        onChange={() =>
+                          props.handleNewPostCategoryClick(category)
+                        }
+                      >
+                        {category}
+                      </Checkbox>
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </Menu>
+
+              <Button onClick={props.handleNewPost}>게시하기</Button>
+              <Button onClick={props.onWritePostModalClose}>취소</Button>
+            </Flex>
           </ModalFooter>
         </ModalContent>
       </Modal>
