@@ -52,7 +52,7 @@ import {
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
 import { FaRegCommentDots, FaHeart, FaArrowUp, FaRegEye } from "react-icons/fa";
-import { Navigate, NavigateFunction } from "react-router-dom";
+import { NavigateFunction } from "react-router-dom";
 import {
   ChevronDownIcon,
   SearchIcon,
@@ -114,8 +114,8 @@ interface ProjectPresentationProps {
   isPostModalOpen: boolean;
   onPostModalClose: () => void;
   selectedPost: Post | null;
-  toggleSortByViews: () => void;
-  sortByViews: boolean;
+  sortCriteria: "views" | "upvotes" | "date";
+  toggleSortCriteria: (criteria: "views" | "upvotes" | "date") => void;
   isWritePostModalOpen: boolean;
   onWritePostModalOpen: () => void;
   onWritePostModalClose: () => void;
@@ -131,6 +131,7 @@ interface ProjectPresentationProps {
   isExpanded: boolean;
   setIsExpanded: (isExpanded: boolean) => void;
   toggleExpand: () => void;
+  getRelativeTime: (date: Date) => string;
 }
 
 const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
@@ -160,6 +161,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
               color="white"
               mr={4}
               cursor="pointer"
+              onClick={() => props.navigate("/")}
             >
               KPAAS
             </Box>
@@ -260,9 +262,38 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                     프로젝트 목록
                   </Heading>
                   <Spacer />
-                  <Button mb={4} onClick={props.toggleSortByViews}>
-                    {props.sortByViews ? "기본 정렬" : "조회수순 정렬"}
-                  </Button>
+                  <Menu>
+                    <MenuButton
+                      as={Button}
+                      rightIcon={<ChevronDownIcon />}
+                      mb={2}
+                    >
+                      {props.sortCriteria === "date" ? (
+                        <Text>날짜 순</Text>
+                      ) : props.sortCriteria === "views" ? (
+                        <Text>조휘수 순</Text>
+                      ) : (
+                        <Text>업보트 순</Text>
+                      )}
+                    </MenuButton>
+                    <MenuList>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("date")}
+                      >
+                        날짜 순
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("views")}
+                      >
+                        조회수 순
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("upvotes")}
+                      >
+                        업보트 순
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
                 </Flex>
                 {props.posts.length === 0 ? (
                   <Text align="center" mt={4} color="gray.500">
@@ -397,7 +428,17 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                   <Stack spacing={2}>
                     <Text fontWeight="bold">커뮤니티 인기글</Text>
                     {props.posts
-                      .sort((a, b) => b.views - a.views)
+                      .sort((a, b) => {
+                        // 선택된 정렬 기준에 맞게 정렬 수행
+                        if (props.sortCriteria === "views") {
+                          return b.views - a.views;
+                        } else if (props.sortCriteria === "upvotes") {
+                          return b.upvotes - a.upvotes;
+                        } else if (props.sortCriteria === "date") {
+                          return b.createdAt.getTime() - a.createdAt.getTime();
+                        }
+                        return 0;
+                      })
                       .slice(0, 5)
                       .map((post) => (
                         <Text
@@ -465,14 +506,24 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 <Stack spacing={2}>
                   <Text fontWeight="bold">커뮤니티 인기글</Text>
                   {props.posts
-                    .sort((a, b) => b.views - a.views)
-                    .slice(0, 5)
+                    .sort((a, b) => {
+                      // 선택된 정렬 기준에 따라 정렬 수행
+                      if (props.sortCriteria === "views") {
+                        return b.views - a.views;
+                      } else if (props.sortCriteria === "upvotes") {
+                        return b.upvotes - a.upvotes;
+                      } else if (props.sortCriteria === "date") {
+                        return b.createdAt.getTime() - a.createdAt.getTime();
+                      }
+                      return 0;
+                    })
+                    .slice(0, 5) // 상위 5개의 인기 글만 표시
                     .map((post) => (
                       <Text
                         key={post.id}
                         onClick={() => {
                           props.handlePostClick(post);
-                          props.onDrawerClose();
+                          props.onDrawerClose(); // 인기 글 클릭 시 Drawer 닫기
                         }}
                         cursor="pointer"
                         width="100%"
@@ -731,30 +782,69 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
         onClose={props.onPostModalClose}
         size="xl"
       >
-        <ModalOverlay />
-        <ModalContent>
+        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
+        {props.selectedPost && (
+          <Flex
+            position="absolute"
+            top="-40px"
+            left="20px"
+            zIndex="9999"
+            backgroundColor="transparent"
+            p={3}
+            borderRadius="lg"
+            boxShadow="lg"
+            alignItems="center"
+          >
+            <Avatar
+              size="sm"
+              mr={3}
+              src="https://your-avatar-url.com/avatar.png"
+            />
+            <Box>
+              <Text fontWeight="bold" fontSize="md" color="white">
+                {props.selectedPost.authorId}님의 아티클
+              </Text>
+              <Text fontSize="sm" color="white">
+                {props.getRelativeTime(new Date(props.selectedPost?.createdAt))}
+              </Text>
+            </Box>
+          </Flex>
+        )}
+        <ModalContent maxW="60%" minH="60vh" overflowY="auto">
           <ModalHeader>{props.selectedPost?.title}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text>{props.selectedPost?.content}</Text>
-            <Text mt={4} fontWeight="bold">
-              작성자: {props.selectedPost?.authorId}
-            </Text>
             <Text>
-              작성 시간: {props.selectedPost?.createdAt.toLocaleString()}
-            </Text>
-            <Text mt={4} fontWeight="bold">
-              카테고리:
+              {props.selectedPost?.createdAt.toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </Text>
             <Wrap mt={2}>
               {props.selectedPost?.categories.map((category) => (
                 <WrapItem key={category}>
                   <Button size="xs" colorScheme="blue" variant="outline">
-                    {category}
+                    #{category}
                   </Button>
                 </WrapItem>
               ))}
             </Wrap>
+            <Flex alignItems="center" textAlign="center">
+              <Text fontWeight="bold" lineHeight="1.5">
+                작성자: {props.selectedPost?.authorId}
+              </Text>
+              <Text lineHeight="1.5" ml={2}>
+                {" "}
+                {/* `ml`로 간격을 추가해줌 */}
+                {props.selectedPost?.createdAt
+                  ? props.getRelativeTime(
+                      new Date(props.selectedPost?.createdAt)
+                    )
+                  : "시간 정보 없음"}
+              </Text>
+            </Flex>
             <Flex mt={4}>
               <Flex align="center" mr={4}>
                 <Icon as={FaRegEye} mr={1} color="gray.500" />
@@ -818,9 +908,25 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
               >
                 <Text fontWeight="bold">{comment.authorId}</Text>
                 <Flex mt={2}>
-                  <Text>{comment.content.length>50?(props.isExpanded?comment.content:comment.content.slice(0,50)):comment.content}
-                    <Button size="xs" variant="link" onClick={props.toggleExpand} ml={2}>
-                      {comment.content.length>50?(props.isExpanded?(<Text> 접기</Text>):(<Text> ...더보기</Text>)):null}
+                  <Text>
+                    {comment.content.length > 50
+                      ? props.isExpanded
+                        ? comment.content
+                        : comment.content.slice(0, 50)
+                      : comment.content}
+                    <Button
+                      size="xs"
+                      variant="link"
+                      onClick={props.toggleExpand}
+                      ml={2}
+                    >
+                      {comment.content.length > 50 ? (
+                        props.isExpanded ? (
+                          <Text> 접기</Text>
+                        ) : (
+                          <Text> ...더보기</Text>
+                        )
+                      ) : null}
                     </Button>
                   </Text>
                 </Flex>
