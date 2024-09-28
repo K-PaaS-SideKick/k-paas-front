@@ -25,72 +25,100 @@ interface Post {
   comments: Comment[];
 }
 
-const dummyPosts: Post[] = [
+const dummyPosts = [
   {
     id: 1,
     title: "First Post",
-    content: "엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 ",
+    content:
+      "엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 ",
     authorId: "user1",
-    createdAt: new Date(),
-    categories: ["Python" ,"C++", "머신러닝"],
+    createdAt: new Date("2024-09-15T10:30:00"), // 2024년 9월 15일 10:30 AM
+    categories: ["Python", "C++", "머신러닝"],
     views: 10,
     upvotes: 0,
     likes: 15,
-    comments: []
+    comments: [],
   },
   {
     id: 2,
     title: "Second Post",
     content: "ㅋㅋㅋㅋㅋㅋㅋㅋㅋ",
     authorId: "user2",
-    createdAt: new Date(),
+    createdAt: new Date("2024-09-16T14:45:00"), // 2024년 9월 16일 2:45 PM
     categories: ["Python"],
     views: 20,
     upvotes: 5,
     likes: 3,
-    comments: []
+    comments: [],
   },
   {
     id: 3,
     title: "Third Post",
     content: "제발 살려줘",
     authorId: "user1",
-    createdAt: new Date(),
+    createdAt: new Date("2024-09-14T08:20:00"), // 2024년 9월 14일 8:20 AM
     categories: ["Java"],
     views: 5,
     upvotes: 200,
     likes: 2,
-    comments: []
+    comments: [],
   },
   {
     id: 4,
     title: "Fourth Post",
     content: "응애",
     authorId: "user4",
-    createdAt: new Date(),
+    createdAt: new Date("2024-09-17T18:00:00"), // 2024년 9월 17일 6:00 PM
     categories: ["웹 개발"],
     views: 8,
     upvotes: 10,
     likes: 1,
-    comments: []
+    comments: [],
   },
 ];
 
-const categories = ["머신러닝", "C++", "Java", "Python", "JavaScript", "웹 개발"];
+const categories = [
+  "머신러닝",
+  "C++",
+  "Java",
+  "Python",
+  "JavaScript",
+  "웹 개발",
+];
 
 const ProjectContainer: React.FC = () => {
   const navigate = useNavigate();
 
   const context = useAppContext();
 
-  const { isOpen: isLoginModalOpen, onOpen: onLoginModalOpen, onClose: onLoginModalClose } = useDisclosure();
-  const { isOpen: isRegisterModalOpen, onOpen: onRegisterModalOpen, onClose: onRegisterModalClose } = useDisclosure();
+  const {
+    isOpen: isLoginModalOpen,
+    onOpen: onLoginModalOpen,
+    onClose: onLoginModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isRegisterModalOpen,
+    onOpen: onRegisterModalOpen,
+    onClose: onRegisterModalClose,
+  } = useDisclosure();
 
-  const { isOpen: isPostModalOpen, onOpen: onPostModalOpen, onClose: onPostModalClose } = useDisclosure();
-  const { isOpen: isWritePostModalOpen, onOpen: onWritePostModalOpen, onClose: onWritePostModalClose } = useDisclosure();
+  const {
+    isOpen: isPostModalOpen,
+    onOpen: onPostModalOpen,
+    onClose: onPostModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isWritePostModalOpen,
+    onOpen: onWritePostModalOpen,
+    onClose: onWritePostModalClose,
+  } = useDisclosure();
 
-  const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
-  
+  const {
+    isOpen: isDrawerOpen,
+    onOpen: onDrawerOpen,
+    onClose: onDrawerClose,
+  } = useDisclosure();
+
   const [id, setId] = useState<string | null>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -103,17 +131,24 @@ const ProjectContainer: React.FC = () => {
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostCategories, setNewPostCategories] = useState<string[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [sortByViews, setSortByViews] = useState<boolean>(false);
+  const [sortCriteria, setSortCriteria] = useState<
+    "views" | "upvotes" | "date"
+  >("date");
 
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     filterPosts();
-  }, [selectedCategories, posts, sortByViews]);
+  }, [selectedCategories, posts, sortCriteria]);
+
+  /*useEffect(() => {
+    console.log(filteredPosts);
+    console.log(sortCriteria);
+  }, [filteredPosts, sortCriteria]);*/
 
   useEffect(() => {
     if (selectedPost) {
-      const updatedPost = posts.find(post => post.id === selectedPost.id);
+      const updatedPost = posts.find((post) => post.id === selectedPost.id);
       if (updatedPost) {
         setSelectedPost(updatedPost);
       }
@@ -121,15 +156,33 @@ const ProjectContainer: React.FC = () => {
   }, [posts, selectedPost?.id]); // 모달창 안에서 업보트를 누르거나 좋아요를 누르면 최신화
 
   const filterPosts = () => {
-    let filtered = posts;
+    let filtered = [...posts]; // Create a new array to avoid mutating the original
+
+    // 카테고리 필터링
     if (selectedCategories.length > 0) {
-      filtered = posts.filter(post => 
-        post.categories.some(category => selectedCategories.includes(category))
+      filtered = filtered.filter((post) =>
+        post.categories.some((category) =>
+          selectedCategories.includes(category)
+        )
       );
     }
-    if (sortByViews) {
-      filtered = [...filtered].sort((a, b) => b.views - a.views);
-    }
+
+    filtered.sort((a, b) => {
+      console.log("Comparing posts:", a.title, b.title);
+      console.log("Views:", a.views, b.views);
+      console.log("Upvotes:", a.upvotes, b.upvotes);
+      console.log("Created At:", a.createdAt, b.createdAt);
+      if (sortCriteria === "views") {
+        return b.views - a.views;
+      } else if (sortCriteria === "upvotes") {
+        return b.upvotes - a.upvotes;
+      } else if (sortCriteria === "date") {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+      return 0;
+    });
+    console.log("Sorted filtered posts:", filtered);
+
     setFilteredPosts(filtered);
   };
 
@@ -161,17 +214,17 @@ const ProjectContainer: React.FC = () => {
   };
 
   const handleCategoryClick = (category: string) => {
-    setSelectedCategories(prev => 
+    setSelectedCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
   };
 
   const handleNewPostCategoryClick = (category: string) => {
-    setNewPostCategories(prev => 
+    setNewPostCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
+        ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
   };
@@ -193,7 +246,7 @@ const ProjectContainer: React.FC = () => {
         views: 0,
         upvotes: 0,
         likes: 0,
-        comments: []
+        comments: [],
       };
       setPosts([newPost, ...posts]);
       setNewPostTitle("");
@@ -205,17 +258,34 @@ const ProjectContainer: React.FC = () => {
     }
   };
 
+  const getRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime(); // 시간 차이 (밀리초)
+  
+    const diffInMinutes = Math.floor(diff / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+  
+    if (diffInMinutes < 60) {
+      return `약 ${diffInMinutes}분 전`;
+    } else if (diffInHours < 24) {
+      return `약 ${diffInHours}시간 전`;
+    } else {
+      return `약 ${diffInDays}일 전`;
+    }
+  };
+
   const handleUpvote = (postId: number) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
         post.id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
       )
     );
   };
 
   const handleLike = (postId: number) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
         post.id === postId ? { ...post, likes: post.likes + 1 } : post
       )
     );
@@ -229,11 +299,11 @@ const ProjectContainer: React.FC = () => {
       authorId: context.userId || "anonymous",
       content: newComment,
       createdAt: new Date(),
-      likes: 0
+      likes: 0,
     };
 
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
         post.id === postId
           ? { ...post, comments: [...post.comments, newCommentObj] }
           : post
@@ -244,16 +314,16 @@ const ProjectContainer: React.FC = () => {
   };
 
   const handleCommentLike = (postId: number, commentId: number) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
         post.id === postId
           ? {
               ...post,
-              comments: post.comments.map(comment =>
+              comments: post.comments.map((comment) =>
                 comment.id === commentId
                   ? { ...comment, likes: comment.likes + 1 }
                   : comment
-              )
+              ),
             }
           : post
       )
@@ -264,22 +334,22 @@ const ProjectContainer: React.FC = () => {
     setSelectedPost(post);
     onPostModalOpen();
     // Increase view count
-    setPosts(prevPosts => 
-      prevPosts.map(p => 
+    setPosts((prevPosts) =>
+      prevPosts.map((p) =>
         p.id === post.id ? { ...p, views: p.views + 1 } : p
       )
     );
   };
 
-  const toggleSortByViews = () => {
-    setSortByViews(!sortByViews);
+  const toggleSortCriteria = (criteria: "views" | "upvotes" | "date") => {
+    setSortCriteria(criteria);
   };
 
   const handleWritePostModalClose = () => {
     onWritePostModalClose(); // 모달을 닫는 기존 함수 호출
     setNewPostCategories([]); // 체크박스 상태 초기화
-    setNewPostTitle("");      // 제목 초기화
-    setNewPostContent("");    // 내용 초기화
+    setNewPostTitle(""); // 제목 초기화
+    setNewPostContent(""); // 내용 초기화
   };
 
   return (
@@ -317,11 +387,11 @@ const ProjectContainer: React.FC = () => {
       isPostModalOpen={isPostModalOpen}
       onPostModalClose={onPostModalClose}
       selectedPost={selectedPost}
-      toggleSortByViews={toggleSortByViews}
-      sortByViews={sortByViews}
+      sortCriteria={sortCriteria} // 추가: 정렬 기준 전달
+      toggleSortCriteria={toggleSortCriteria} // 추가: 정렬 기준 변경 함수 전달
       isWritePostModalOpen={isWritePostModalOpen}
       onWritePostModalOpen={onWritePostModalOpen}
-      onWritePostModalClose={handleWritePostModalClose}  // 수정된 함수 사용
+      onWritePostModalClose={handleWritePostModalClose}
       handleUpvote={handleUpvote}
       handleLike={handleLike}
       handleCommentLike={handleCommentLike}
@@ -331,6 +401,7 @@ const ProjectContainer: React.FC = () => {
       isExpanded={isExpanded}
       setIsExpanded={setIsExpanded}
       toggleExpand={toggleExpand}
+      getRelativeTime={getRelativeTime}
     />
   );
 };
