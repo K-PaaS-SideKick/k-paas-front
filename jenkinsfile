@@ -45,7 +45,7 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Clone Repository') {    // clone repository from git
             steps {
                 // Clone the repository
                 git credentialsId: 'GitHubCred',
