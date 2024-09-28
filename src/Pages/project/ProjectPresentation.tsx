@@ -263,9 +263,9 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                   <Spacer />
                   <Menu>
                     <MenuButton as={Button} rightIcon={<ChevronDownIcon />} mb={2}>
-                      {props.sortCriteria == "date" ? (
+                      {props.sortCriteria === "date" ? (
                         <Text>날짜 순</Text>
-                      ) : props.sortCriteria == "views" ? (
+                      ) : props.sortCriteria === "views" ? (
                         <Text>조휘수 순</Text>
                       ) : (
                         <Text>업보트 순</Text>
