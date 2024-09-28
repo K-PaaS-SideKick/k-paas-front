@@ -114,8 +114,8 @@ interface ProjectPresentationProps {
   isPostModalOpen: boolean;
   onPostModalClose: () => void;
   selectedPost: Post | null;
-  toggleSortByViews: () => void;
-  sortByViews: boolean;
+  sortCriteria: "views" | "upvotes" | "date";
+  toggleSortCriteria: (criteria: "views" | "upvotes" | "date") => void;
   isWritePostModalOpen: boolean;
   onWritePostModalOpen: () => void;
   onWritePostModalClose: () => void;
@@ -261,9 +261,34 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                     프로젝트 목록
                   </Heading>
                   <Spacer />
-                  <Button mb={4} onClick={props.toggleSortByViews}>
-                    {props.sortByViews ? "기본 정렬" : "조회수순 정렬"}
-                  </Button>
+                  <Menu>
+                    <MenuButton as={Button} rightIcon={<ChevronDownIcon />} mb={2}>
+                      {props.sortCriteria == "date" ? (
+                        <Text>날짜 순</Text>
+                      ) : props.sortCriteria == "views" ? (
+                        <Text>조휘수 순</Text>
+                      ) : (
+                        <Text>업보트 순</Text>
+                      )}
+                    </MenuButton>
+                    <MenuList>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("date")}
+                      >
+                        날짜 순
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("views")}
+                      >
+                        조회수 순
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => props.toggleSortCriteria("upvotes")}
+                      >
+                        업보트 순
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
                 </Flex>
                 {props.posts.length === 0 ? (
                   <Text align="center" mt={4} color="gray.500">
@@ -398,7 +423,17 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                   <Stack spacing={2}>
                     <Text fontWeight="bold">커뮤니티 인기글</Text>
                     {props.posts
-                      .sort((a, b) => b.views - a.views)
+                      .sort((a, b) => {
+                        // 선택된 정렬 기준에 맞게 정렬 수행
+                        if (props.sortCriteria === "views") {
+                          return b.views - a.views;
+                        } else if (props.sortCriteria === "upvotes") {
+                          return b.upvotes - a.upvotes;
+                        } else if (props.sortCriteria === "date") {
+                          return b.createdAt.getTime() - a.createdAt.getTime();
+                        }
+                        return 0;
+                      })
                       .slice(0, 5)
                       .map((post) => (
                         <Text
@@ -466,14 +501,24 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 <Stack spacing={2}>
                   <Text fontWeight="bold">커뮤니티 인기글</Text>
                   {props.posts
-                    .sort((a, b) => b.views - a.views)
-                    .slice(0, 5)
+                    .sort((a, b) => {
+                      // 선택된 정렬 기준에 따라 정렬 수행
+                      if (props.sortCriteria === "views") {
+                        return b.views - a.views;
+                      } else if (props.sortCriteria === "upvotes") {
+                        return b.upvotes - a.upvotes;
+                      } else if (props.sortCriteria === "date") {
+                        return b.createdAt.getTime() - a.createdAt.getTime();
+                      }
+                      return 0;
+                    })
+                    .slice(0, 5) // 상위 5개의 인기 글만 표시
                     .map((post) => (
                       <Text
                         key={post.id}
                         onClick={() => {
                           props.handlePostClick(post);
-                          props.onDrawerClose();
+                          props.onDrawerClose(); // 인기 글 클릭 시 Drawer 닫기
                         }}
                         cursor="pointer"
                         width="100%"
@@ -819,9 +864,25 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
               >
                 <Text fontWeight="bold">{comment.authorId}</Text>
                 <Flex mt={2}>
-                  <Text>{comment.content.length>50?(props.isExpanded?comment.content:comment.content.slice(0,50)):comment.content}
-                    <Button size="xs" variant="link" onClick={props.toggleExpand} ml={2}>
-                      {comment.content.length>50?(props.isExpanded?(<Text> 접기</Text>):(<Text> ...더보기</Text>)):null}
+                  <Text>
+                    {comment.content.length > 50
+                      ? props.isExpanded
+                        ? comment.content
+                        : comment.content.slice(0, 50)
+                      : comment.content}
+                    <Button
+                      size="xs"
+                      variant="link"
+                      onClick={props.toggleExpand}
+                      ml={2}
+                    >
+                      {comment.content.length > 50 ? (
+                        props.isExpanded ? (
+                          <Text> 접기</Text>
+                        ) : (
+                          <Text> ...더보기</Text>
+                        )
+                      ) : null}
                     </Button>
                   </Text>
                 </Flex>
