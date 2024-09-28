@@ -36,6 +36,10 @@ pipeline {
                 '''
             }
     }
+    
+    triggers {
+        githubPush()
+    }
 
     environment {
         DOCKERHUB_REPO = 'sangwookie/sidekick-react-app'
@@ -45,6 +49,10 @@ pipeline {
     }
 
     stages {
+        when {
+            branch 'master' // 특정 브랜치명
+        }
+        
         stage('Clone Repository') {
             steps {
                 // Clone the repository
