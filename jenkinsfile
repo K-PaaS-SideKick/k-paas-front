@@ -36,10 +36,6 @@ pipeline {
                 '''
             }
     }
-    
-    triggers {
-        githubPush()
-    }
 
     environment {
         DOCKERHUB_REPO = 'sangwookie/sidekick-react-app'
@@ -49,21 +45,6 @@ pipeline {
     }
 
     stages {
-        stage('Check Branch') {
-            when {
-                not {
-                    branch 'master'
-                }
-            }
-            steps {
-                script {
-                    echo "Branch is not ${TARGET_BRANCH}, skipping the pipeline."
-                    currentBuild.result = 'NOT_BUILT'
-                    error("Stopping the pipeline because the branch is not ${TARGET_BRANCH}.")
-                }
-            }
-        }
-
         stage('Clone Repository') {
             steps {
                 // Clone the repository
