@@ -2,7 +2,7 @@ import { RouteObject } from "react-router-dom";
 import { LandingContainer } from "../Pages/landing";
 import { ProjectContainer } from "../Pages/project";
 import { CommunityContainer } from "../Pages/community";
-import { PublicContainer } from "../Pages/public";
+import { UserContainer } from "../Pages/user";
 
 export const routes: RouteObject[] = [
   {
@@ -17,13 +17,12 @@ export const routes: RouteObject[] = [
     path: "community",
     element: <CommunityContainer />,
   },
-
   {
-    path: "public",
+    path: "user",
     children: [
       {
-        path: ":publicId",
-        element: <PublicContainer />,
+        path: ":userId",
+        element: <UserContainer />,
       },
     ],
   },
