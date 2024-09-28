@@ -25,14 +25,14 @@ interface Post {
   comments: Comment[];
 }
 
-const dummyPosts: Post[] = [
+const dummyPosts = [
   {
     id: 1,
     title: "First Post",
     content:
       "엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 ",
     authorId: "user1",
-    createdAt: new Date(),
+    createdAt: new Date("2024-09-15T10:30:00"), // 2024년 9월 15일 10:30 AM
     categories: ["Python", "C++", "머신러닝"],
     views: 10,
     upvotes: 0,
@@ -44,7 +44,7 @@ const dummyPosts: Post[] = [
     title: "Second Post",
     content: "ㅋㅋㅋㅋㅋㅋㅋㅋㅋ",
     authorId: "user2",
-    createdAt: new Date(),
+    createdAt: new Date("2024-09-16T14:45:00"), // 2024년 9월 16일 2:45 PM
     categories: ["Python"],
     views: 20,
     upvotes: 5,
@@ -56,7 +56,7 @@ const dummyPosts: Post[] = [
     title: "Third Post",
     content: "제발 살려줘",
     authorId: "user1",
-    createdAt: new Date(),
+    createdAt: new Date("2024-09-14T08:20:00"), // 2024년 9월 14일 8:20 AM
     categories: ["Java"],
     views: 5,
     upvotes: 200,
@@ -68,7 +68,7 @@ const dummyPosts: Post[] = [
     title: "Fourth Post",
     content: "응애",
     authorId: "user4",
-    createdAt: new Date(),
+    createdAt: new Date("2024-09-17T18:00:00"), // 2024년 9월 17일 6:00 PM
     categories: ["웹 개발"],
     views: 8,
     upvotes: 10,
@@ -258,6 +258,23 @@ const ProjectContainer: React.FC = () => {
     }
   };
 
+  const getRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime(); // 시간 차이 (밀리초)
+  
+    const diffInMinutes = Math.floor(diff / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+  
+    if (diffInMinutes < 60) {
+      return `약 ${diffInMinutes}분 전`;
+    } else if (diffInHours < 24) {
+      return `약 ${diffInHours}시간 전`;
+    } else {
+      return `약 ${diffInDays}일 전`;
+    }
+  };
+
   const handleUpvote = (postId: number) => {
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
@@ -384,6 +401,7 @@ const ProjectContainer: React.FC = () => {
       isExpanded={isExpanded}
       setIsExpanded={setIsExpanded}
       toggleExpand={toggleExpand}
+      getRelativeTime={getRelativeTime}
     />
   );
 };

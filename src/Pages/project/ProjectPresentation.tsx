@@ -131,6 +131,7 @@ interface ProjectPresentationProps {
   isExpanded: boolean;
   setIsExpanded: (isExpanded: boolean) => void;
   toggleExpand: () => void;
+  getRelativeTime: (date: Date) => string;
 }
 
 const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
@@ -262,7 +263,11 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                   </Heading>
                   <Spacer />
                   <Menu>
-                    <MenuButton as={Button} rightIcon={<ChevronDownIcon />} mb={2}>
+                    <MenuButton
+                      as={Button}
+                      rightIcon={<ChevronDownIcon />}
+                      mb={2}
+                    >
                       {props.sortCriteria === "date" ? (
                         <Text>날짜 순</Text>
                       ) : props.sortCriteria === "views" ? (
@@ -777,30 +782,69 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
         onClose={props.onPostModalClose}
         size="xl"
       >
-        <ModalOverlay />
-        <ModalContent>
+        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
+        {props.selectedPost && (
+          <Flex
+            position="absolute"
+            top="-40px"
+            left="20px"
+            zIndex="9999"
+            backgroundColor="transparent"
+            p={3}
+            borderRadius="lg"
+            boxShadow="lg"
+            alignItems="center"
+          >
+            <Avatar
+              size="sm"
+              mr={3}
+              src="https://your-avatar-url.com/avatar.png"
+            />
+            <Box>
+              <Text fontWeight="bold" fontSize="md" color="white">
+                {props.selectedPost.authorId}님의 아티클
+              </Text>
+              <Text fontSize="sm" color="white">
+                {props.getRelativeTime(new Date(props.selectedPost?.createdAt))}
+              </Text>
+            </Box>
+          </Flex>
+        )}
+        <ModalContent maxW="60%" minH="60vh" overflowY="auto">
           <ModalHeader>{props.selectedPost?.title}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text>{props.selectedPost?.content}</Text>
-            <Text mt={4} fontWeight="bold">
-              작성자: {props.selectedPost?.authorId}
-            </Text>
             <Text>
-              작성 시간: {props.selectedPost?.createdAt.toLocaleString()}
-            </Text>
-            <Text mt={4} fontWeight="bold">
-              카테고리:
+              {props.selectedPost?.createdAt.toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </Text>
             <Wrap mt={2}>
               {props.selectedPost?.categories.map((category) => (
                 <WrapItem key={category}>
                   <Button size="xs" colorScheme="blue" variant="outline">
-                    {category}
+                    #{category}
                   </Button>
                 </WrapItem>
               ))}
             </Wrap>
+            <Flex alignItems="center" textAlign="center">
+              <Text fontWeight="bold" lineHeight="1.5">
+                작성자: {props.selectedPost?.authorId}
+              </Text>
+              <Text lineHeight="1.5" ml={2}>
+                {" "}
+                {/* `ml`로 간격을 추가해줌 */}
+                {props.selectedPost?.createdAt
+                  ? props.getRelativeTime(
+                      new Date(props.selectedPost?.createdAt)
+                    )
+                  : "시간 정보 없음"}
+              </Text>
+            </Flex>
             <Flex mt={4}>
               <Flex align="center" mr={4}>
                 <Icon as={FaRegEye} mr={1} color="gray.500" />
