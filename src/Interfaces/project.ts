@@ -3,7 +3,12 @@ export interface JoinRequest {
     uid: string;
 };
 
-export interface JoinResponse {
+export interface StatusResponse {
     uid: string;
     active: boolean;
+};
+
+export interface JoinResponse {
+    pid: number;
+    uid: string;
 };
