@@ -45,7 +45,7 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Clone Repository') { 
             steps {
                 // Clone the repository
                 git credentialsId: 'GitHubCred',
@@ -133,12 +133,6 @@ pipeline {
                 """
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
         }
     }
 }

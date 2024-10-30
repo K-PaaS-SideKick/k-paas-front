@@ -10,6 +10,7 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  InputRightElement,
   IconButton,
   Image,
   VStack,
@@ -51,7 +52,7 @@ import {
   DrawerCloseButton,
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
-import { FaRegCommentDots, FaHeart, FaArrowUp, FaRegEye } from "react-icons/fa";
+import { FaRegCommentDots, FaHeart, FaArrowUp, FaRegEye, FaThumbsUp } from "react-icons/fa";
 import { NavigateFunction } from "react-router-dom";
 import {
   ChevronDownIcon,
@@ -59,11 +60,12 @@ import {
   BellIcon,
   EditIcon,
   HamburgerIcon,
+  ArrowUpIcon,
 } from "@chakra-ui/icons";
 import { User, MessageSquare, Lightbulb, Share2 } from "lucide-react";
 
 interface Comment {
-  id: number;
+  pid: number;
   content: string;
   authorId: string;
   createdAt: Date;
@@ -71,7 +73,7 @@ interface Comment {
 }
 
 interface Post {
-  id: number;
+  pid: number;
   title: string;
   content: string;
   authorId: string;
@@ -302,7 +304,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                 ) : (
                   props.posts.map((post) => (
                     <Box
-                      key={post.id}
+                      key={post.pid}
                       p={4}
                       shadow="md"
                       borderWidth="1px"
@@ -320,7 +322,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                           {post.categories.map((category) => (
                             <WrapItem key={category}>
                               <Badge colorScheme="blue" mr={1}>
-                                {category}
+                                # {category}
                               </Badge>
                             </WrapItem>
                           ))}
@@ -346,7 +348,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                             mr={4}
                             onClick={(e) => {
                               e.stopPropagation();
-                              props.handleLike(post.id || 0);
+                              props.handleLike(post.pid || 0);
                             }}
                           >
                             <Icon as={FaHeart} mr={1} color="red.500" />
@@ -359,7 +361,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                             mr={4}
                             onClick={(e) => {
                               e.stopPropagation();
-                              props.handleUpvote(post.id || 0);
+                              props.handleUpvote(post.pid || 0);
                             }}
                           >
                             <Icon as={FaArrowUp} mr={1} color="gray.500" />
@@ -442,7 +444,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                       .slice(0, 5)
                       .map((post) => (
                         <Text
-                          key={post.id}
+                          key={post.pid}
                           onClick={() => props.handlePostClick(post)}
                           cursor="pointer"
                           width="100%"
@@ -520,7 +522,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                     .slice(0, 5) // 상위 5개의 인기 글만 표시
                     .map((post) => (
                       <Text
-                        key={post.id}
+                        key={post.pid}
                         onClick={() => {
                           props.handlePostClick(post);
                           props.onDrawerClose(); // 인기 글 클릭 시 Drawer 닫기
@@ -776,6 +778,59 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
         </ModalContent>
       </Modal>
 
+      {props.isPostModalOpen ? (
+        <Box
+          position="fixed"
+          bottom="20px"
+          left="50%"
+          transform="translateX(-50%)"
+          width="40%"
+          p={4}
+          bg="rgba(0, 0, 0, 0.8)"
+          color="white"
+          borderRadius="20px"
+          display="flex"
+          justifyContent="space-around"
+          alignItems="center"
+          zIndex="9999"
+        >
+          <Flex align="center">
+            <Icon as={FaRegEye} mr={1} color="gray.300" />
+            <Text fontSize="sm" color="gray.300">
+              {props.selectedPost?.views}
+            </Text>
+          </Flex>
+          <Flex
+            align="center"
+            cursor="pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              props.handleLike(props.selectedPost?.pid || 0);
+            }}
+          >
+            <Icon as={FaHeart} mr={1} color="red.500" />
+            <Text fontSize="sm" color="gray.300">
+              {props.selectedPost?.likes}
+            </Text>
+          </Flex>
+          <Flex
+            align="center"
+            cursor="pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              props.handleUpvote(props.selectedPost?.pid || 0);
+            }}
+          >
+            <Icon as={FaArrowUp} mr={1} color="gray.300" />
+            <Text fontSize="sm" color="gray.300">
+              {props.selectedPost?.upvotes}
+            </Text>
+          </Flex>
+        </Box>
+      ) : (
+        ""
+      )}
+
       {/* Post Modal */}
       <Modal
         isOpen={props.isPostModalOpen}
@@ -785,8 +840,8 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
         <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
         {props.selectedPost && (
           <Flex
-            position="absolute"
-            top="-40px"
+            position="fixed"
+            top="20px"
             left="20px"
             zIndex="9999"
             backgroundColor="transparent"
@@ -798,165 +853,138 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
             <Avatar
               size="sm"
               mr={3}
-              src="https://your-avatar-url.com/avatar.png"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
             />
             <Box>
               <Text fontWeight="bold" fontSize="md" color="white">
                 {props.selectedPost.authorId}님의 아티클
               </Text>
               <Text fontSize="sm" color="white">
-                {props.getRelativeTime(new Date(props.selectedPost?.createdAt))}
+                {props.getRelativeTime(new Date(props.selectedPost.createdAt))}
               </Text>
             </Box>
           </Flex>
         )}
-        <ModalContent maxW="60%" minH="60vh" overflowY="auto">
-          <ModalHeader>{props.selectedPost?.title}</ModalHeader>
+        <ModalContent maxW="60%" minH="100vh" overflowY="auto" p={8}>
           <ModalCloseButton />
           <ModalBody>
-            <Text>{props.selectedPost?.content}</Text>
-            <Text>
+            <Wrap mt={2}>
+              {props.selectedPost?.categories.map((category) => (
+                <WrapItem key={category}>
+                  <Button size="xs" colorScheme="blue" variant="outline">
+                    # {category}
+                  </Button>
+                </WrapItem>
+              ))}
+            </Wrap>
+            <br />
+            <Text color="gray">
               {props.selectedPost?.createdAt.toLocaleDateString("ko-KR", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
               })}
             </Text>
-            <Wrap mt={2}>
-              {props.selectedPost?.categories.map((category) => (
-                <WrapItem key={category}>
-                  <Button size="xs" colorScheme="blue" variant="outline">
-                    #{category}
-                  </Button>
-                </WrapItem>
-              ))}
-            </Wrap>
-            <Flex alignItems="center" textAlign="center">
-              <Text fontWeight="bold" lineHeight="1.5">
-                작성자: {props.selectedPost?.authorId}
-              </Text>
-              <Text lineHeight="1.5" ml={2}>
-                {" "}
-                {/* `ml`로 간격을 추가해줌 */}
-                {props.selectedPost?.createdAt
-                  ? props.getRelativeTime(
-                      new Date(props.selectedPost?.createdAt)
-                    )
-                  : "시간 정보 없음"}
-              </Text>
-            </Flex>
-            <Flex mt={4}>
-              <Flex align="center" mr={4}>
-                <Icon as={FaRegEye} mr={1} color="gray.500" />
-                <Text fontSize="sm" color="gray.500">
-                  {props.selectedPost?.views}
-                </Text>
-              </Flex>
-              <Flex
-                align="center"
-                mr={4}
-                cursor="pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  props.handleLike(props.selectedPost?.id || 0);
-                }}
-              >
-                <Icon as={FaHeart} mr={1} color="red.500" />
-                <Text fontSize="sm" color="gray.500">
-                  {props.selectedPost?.likes}
-                </Text>
-              </Flex>
-              <Flex
-                align="center"
-                mr={4}
-                cursor="pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  props.handleUpvote(props.selectedPost?.id || 0);
-                }}
-              >
-                <Icon as={FaArrowUp} mr={1} color="gray.500" />
-                <Text fontSize="sm" color="gray.500">
-                  {props.selectedPost?.upvotes}
-                </Text>
-              </Flex>
-            </Flex>
+            <br />
+            <Heading size="lg">{props.selectedPost?.title}</Heading>
+            <br />
+            <Text>{props.selectedPost?.content}</Text>
+            <br />
             <Divider my={4} />
             <Text fontWeight="bold">댓글:</Text>
             <Box mt={4}>
-              <Textarea
-                value={props.newComment}
-                onChange={(e) => props.setNewComment(e.target.value)}
-                placeholder="댓글을 입력하세요"
-              />
-              <Button
-                mt={2}
-                onClick={() =>
-                  props.handleAddComment(props.selectedPost?.id || 0)
-                }
-              >
-                댓글 작성
-              </Button>
+              <InputGroup>
+                <Avatar
+                  size="sm"
+                  mr={3}
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
+                />
+                <Input
+                  value={props.newComment}
+                  onChange={(e) => props.setNewComment(e.target.value)}
+                  bgColor="gray.100"
+                  placeholder="댓글을 입력하세요"
+                />
+                <InputRightElement width="4.5rem">
+                  <Button
+                    h="2rem" // 높이
+                    w="2rem" // 너비 (높이와 동일하게 설정)
+                    borderRadius="50%" // 버튼을 원형으로 설정
+                    bgColor="white"
+                    _hover={{ boxShadow: "0 0 0 3px rgba(0, 0, 255, 0.5)" }}
+                    onClick={() =>
+                      props.handleAddComment(props.selectedPost?.pid || 0)
+                    }
+                  >
+                    <ArrowUpIcon color="blue" />
+                  </Button>
+                </InputRightElement>
+              </InputGroup>
+              <br />
             </Box>
             {props.selectedPost?.comments.map((comment) => (
-              <Box
-                key={comment.id}
-                mt={2}
-                p={2}
-                bg="gray.100"
-                borderRadius="md"
-              >
-                <Text fontWeight="bold">{comment.authorId}</Text>
-                <Flex mt={2}>
-                  <Text>
+              <VStack align="start" spacing={4}>
+                <Flex alignItems="center">
+                  <Avatar
+                    size="md"
+                    name={comment.authorId}
+                    mr={4}
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
+                  />
+                  <Box>
+                    <Text fontWeight="bold">{comment.authorId}</Text>
+                    <Text fontSize="sm" color="gray.500">
+                      {props.getRelativeTime(new Date(comment.createdAt))}
+                    </Text>
+                  </Box>
+                </Flex>
+
+                <Box
+                  key={comment.pid}
+                  p={4}
+                  bg="gray.50"
+                  borderRadius="lg"
+                  w="full"
+                  boxShadow="sm"
+                >
+                  <Text fontSize="md" mb={2}>
                     {comment.content.length > 50
                       ? props.isExpanded
                         ? comment.content
                         : comment.content.slice(0, 50)
                       : comment.content}
-                    <Button
-                      size="xs"
-                      variant="link"
-                      onClick={props.toggleExpand}
-                      ml={2}
-                    >
-                      {comment.content.length > 50 ? (
-                        props.isExpanded ? (
-                          <Text> 접기</Text>
-                        ) : (
-                          <Text> ...더보기</Text>
-                        )
-                      ) : null}
-                    </Button>
+                    {comment.content.length > 50 && (
+                      <Button
+                        size="xs"
+                        variant="link"
+                        onClick={props.toggleExpand}
+                        ml={2}
+                        color="blue.500"
+                      >
+                        {props.isExpanded ? "접기" : "...더보기"}
+                      </Button>
+                    )}
                   </Text>
-                </Flex>
-                <Flex alignItems={"center"}>
-                  <Text fontSize="sm" color="gray.500">
-                    {comment.createdAt.toLocaleString()}
-                  </Text>
-                  <Spacer />
-                  <Button
-                    size="sm"
-                    variant={"ghost"}
-                    onClick={() =>
-                      props.handleCommentLike(
-                        props.selectedPost?.id || 0,
-                        comment.id
-                      )
-                    }
-                  >
-                    <Box
-                      bg="blue.100"
-                      borderRadius="md"
-                      alignItems={"center"}
-                      alignContent={"center"}
-                      p={2}
-                    >
-                      ❤️ {comment.likes}
-                    </Box>
-                  </Button>
-                </Flex>
-              </Box>
+
+                  <Flex justify="space-between" alignItems="center">
+                    <Flex alignItems="center">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          props.handleCommentLike(
+                            props.selectedPost?.pid || 0,
+                            comment.pid
+                          )
+                        }
+                      >
+                        <Icon as={FaThumbsUp} color="blue.500" />
+                        <Text ml={2}>{comment.likes}</Text>
+                      </Button>
+                    </Flex>
+                  </Flex>
+                </Box>
+              </VStack>
             ))}
           </ModalBody>
 

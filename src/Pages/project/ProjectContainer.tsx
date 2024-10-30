@@ -5,7 +5,7 @@ import ProjectPresentation from "./ProjectPresentation";
 import { useAppContext } from "../../AppContext";
 
 interface Comment {
-  id: number;
+  pid: number;
   content: string;
   authorId: string;
   createdAt: Date;
@@ -13,7 +13,7 @@ interface Comment {
 }
 
 interface Post {
-  id: number;
+  pid: number;
   title: string;
   content: string;
   authorId: string;
@@ -27,7 +27,7 @@ interface Post {
 
 const dummyPosts = [
   {
-    id: 1,
+    pid: 1,
     title: "First Post",
     content:
       "엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 엄재윤 ",
@@ -40,7 +40,7 @@ const dummyPosts = [
     comments: [],
   },
   {
-    id: 2,
+    pid: 2,
     title: "Second Post",
     content: "ㅋㅋㅋㅋㅋㅋㅋㅋㅋ",
     authorId: "user2",
@@ -52,7 +52,7 @@ const dummyPosts = [
     comments: [],
   },
   {
-    id: 3,
+    pid: 3,
     title: "Third Post",
     content: "제발 살려줘",
     authorId: "user1",
@@ -64,7 +64,7 @@ const dummyPosts = [
     comments: [],
   },
   {
-    id: 4,
+    pid: 4,
     title: "Fourth Post",
     content: "응애",
     authorId: "user4",
@@ -141,19 +141,14 @@ const ProjectContainer: React.FC = () => {
     filterPosts();
   }, [selectedCategories, posts, sortCriteria]);
 
-  /*useEffect(() => {
-    console.log(filteredPosts);
-    console.log(sortCriteria);
-  }, [filteredPosts, sortCriteria]);*/
-
   useEffect(() => {
     if (selectedPost) {
-      const updatedPost = posts.find((post) => post.id === selectedPost.id);
+      const updatedPost = posts.find((post) => post.pid === selectedPost.pid);
       if (updatedPost) {
         setSelectedPost(updatedPost);
       }
     }
-  }, [posts, selectedPost?.id]); // 모달창 안에서 업보트를 누르거나 좋아요를 누르면 최신화
+  }, [posts, selectedPost?.pid]); // 모달창 안에서 업보트를 누르거나 좋아요를 누르면 최신화
 
   const filterPosts = () => {
     let filtered = [...posts]; // Create a new array to avoid mutating the original
@@ -237,7 +232,7 @@ const ProjectContainer: React.FC = () => {
 
     if (newPostTitle && newPostContent && newPostCategories.length > 0) {
       const newPost: Post = {
-        id: posts.length + 1,
+        pid: posts.length + 1,
         title: newPostTitle,
         content: newPostContent,
         authorId: context.userId || "",
@@ -278,7 +273,7 @@ const ProjectContainer: React.FC = () => {
   const handleUpvote = (postId: number) => {
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
-        post.id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
+        post.pid === postId ? { ...post, upvotes: post.upvotes + 1 } : post
       )
     );
   };
@@ -286,7 +281,7 @@ const ProjectContainer: React.FC = () => {
   const handleLike = (postId: number) => {
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
-        post.id === postId ? { ...post, likes: post.likes + 1 } : post
+        post.pid === postId ? { ...post, likes: post.likes + 1 } : post
       )
     );
   };
@@ -295,7 +290,7 @@ const ProjectContainer: React.FC = () => {
     if (newComment.trim() === "") return;
 
     const newCommentObj: Comment = {
-      id: Date.now(),
+      pid: Date.now(),
       authorId: context.userId || "anonymous",
       content: newComment,
       createdAt: new Date(),
@@ -304,7 +299,7 @@ const ProjectContainer: React.FC = () => {
 
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
-        post.id === postId
+        post.pid === postId
           ? { ...post, comments: [...post.comments, newCommentObj] }
           : post
       )
@@ -316,11 +311,11 @@ const ProjectContainer: React.FC = () => {
   const handleCommentLike = (postId: number, commentId: number) => {
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
-        post.id === postId
+        post.pid === postId
           ? {
               ...post,
               comments: post.comments.map((comment) =>
-                comment.id === commentId
+                comment.pid === commentId
                   ? { ...comment, likes: comment.likes + 1 }
                   : comment
               ),
@@ -336,7 +331,7 @@ const ProjectContainer: React.FC = () => {
     // Increase view count
     setPosts((prevPosts) =>
       prevPosts.map((p) =>
-        p.id === post.id ? { ...p, views: p.views + 1 } : p
+        p.pid === post.pid ? { ...p, views: p.views + 1 } : p
       )
     );
   };
