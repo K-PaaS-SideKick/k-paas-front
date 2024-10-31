@@ -52,7 +52,13 @@ import {
   DrawerCloseButton,
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
-import { FaRegCommentDots, FaHeart, FaArrowUp, FaRegEye, FaThumbsUp } from "react-icons/fa";
+import {
+  FaRegCommentDots,
+  FaHeart,
+  FaArrowUp,
+  FaRegEye,
+  FaThumbsUp,
+} from "react-icons/fa";
 import { NavigateFunction } from "react-router-dom";
 import {
   ChevronDownIcon,
