@@ -101,7 +101,9 @@ export const getMainPageProjects = async (pageable: { page: number; size: number
     try {
       const response: AxiosResponse<MainPageResponse> = await api.get('/', {
         params: {
-          pageable,
+          page: pageable.page,
+          size: pageable.size,
+          sort: pageable.sort.join(','),
         },
       });
       return response.data;
@@ -110,6 +112,7 @@ export const getMainPageProjects = async (pageable: { page: number; size: number
       throw error;
     }
   };
+  
 
   // 메인 페이지에서 삭제 호출 (자기가 작성한 프로젝트만 삭제 가능하게)
   export const deleteProject = async (id: number): Promise<void> => {

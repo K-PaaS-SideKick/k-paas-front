@@ -52,7 +52,13 @@ import {
   DrawerCloseButton,
 } from "@chakra-ui/react";
 import { TbLogout } from "react-icons/tb";
-import { FaRegCommentDots, FaHeart, FaArrowUp, FaRegEye, FaThumbsUp } from "react-icons/fa";
+import {
+  FaRegCommentDots,
+  FaHeart,
+  FaArrowUp,
+  FaRegEye,
+  FaThumbsUp,
+} from "react-icons/fa";
 import { NavigateFunction } from "react-router-dom";
 import {
   ChevronDownIcon,
@@ -165,7 +171,7 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
               cursor="pointer"
               onClick={() => props.navigate("/")}
             >
-              KPAAS
+              SIDEKICK
             </Box>
             <InputGroup maxW={isMobile ? "60%" : "400px"}>
               <InputLeftElement pointerEvents="none">
@@ -316,7 +322,9 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                     >
                       <Flex direction="column">
                         <Heading size="sm" mb={2}>
-                          {post.title}
+                          {post.title.length > 30
+                            ? `${post.title.slice(0, 30)}...`
+                            : post.title}
                         </Heading>
                         <Wrap mb={4}>
                           {post.categories.map((category) => (
@@ -451,7 +459,10 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                           textAlign="left"
                           isTruncated
                         >
-                          {post.title} (조회수: {post.views})
+                          {post.title.length > 15
+                            ? `${post.title.slice(0, 15)}...`
+                            : post.title}
+                          (조회수: {post.views})
                         </Text>
                       ))}
                   </Stack>
@@ -532,7 +543,10 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
                         textAlign="left"
                         isTruncated
                       >
-                        {post.title} (조회수: {post.views})
+                        {post.title.length > 10
+                          ? `${post.title.slice(0, 10)}...`
+                          : post.title}
+                        (조회수: {post.views})
                       </Text>
                     ))}
                 </Stack>
@@ -714,10 +728,10 @@ const ProjectPresentation: React.FC<ProjectPresentationProps> = (props) => {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader textAlign="center">KPaaS 가입</ModalHeader>
+          <ModalHeader textAlign="center">SIDEKICK 가입</ModalHeader>
           <ModalBody>
             <Text textAlign="center" mb={4}>
-              KPaaS에 오신 것을 환영합니다.
+              SIDEKICK에 오신 것을 환영합니다.
             </Text>
             <VStack spacing={3} align="stretch">
               <Button leftIcon={<Icon as={User} />} variant="outline" size="lg">
