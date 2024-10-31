@@ -11,7 +11,7 @@ import {
 // Axios 프로젝트 인스턴스 -> 재윤이는 url 뒤에 있는 /project 바꿔서 해야해
 const api = axios.create({
   baseURL:
-    "http://dev-api-gateway-0c70e-100185383-20cb16fabe53.kr.lb.naverncp.com:8000/project",
+    process.env.REACT_APP_BASEURL,
   headers: {
     "Content-Type": "application/json",
   },
