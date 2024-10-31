@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Avatar,
   Box,
   Button,
   Grid,
@@ -19,26 +20,38 @@ import {
   Wrap,
   WrapItem,
   useColorModeValue,
+  Divider,
+  InputGroup,
+  Input,
+  VStack,
+  InputRightElement,
+  Icon,
 } from "@chakra-ui/react";
+import { ArrowUpIcon } from "@chakra-ui/icons";
 import Masonry from "react-masonry-css";
 import { useNavigate } from "react-router-dom";
 import { NavigateFunction } from "react-router-dom";
 import "./landing.css";
+import {
+  ProjectPost,
+  categoryMap,
+  SelectedPost,
+} from "../../Interfaces/interfaces";
+import {
+  FaRegCommentDots,
+  FaHeart,
+  FaArrowUp,
+  FaRegEye,
+  FaThumbsUp,
+} from "react-icons/fa";
 
 interface LandingPresentationProps {
   navigate: NavigateFunction;
-  post: Post[];
-  handlePostClick: (post: Post) => void;
+  posts: ProjectPost[];
   isPostModalOpen: boolean;
   onPostModalClose: () => void;
-  selectedPost: Post | null;
-}
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  categories: string[];
-  views: number;
+  selectedPost: SelectedPost | null;
+  onClickPost: (pid: number) => void;
 }
 
 const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
@@ -82,34 +95,12 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
               size="lg"
               fontWeight="bold"
             >
-              KPAAS
+              SideKick
             </Heading>
             <HStack spacing={4}>
               <Button onClick={() => props.navigate("/project")}>
                 프로젝트
               </Button>
-              <Button onClick={() => props.navigate("/community")}>
-                커뮤니티
-              </Button>
-              {/* {props.isLoggedIn ? (
-                <Button
-                  colorScheme="red"
-                  onClick={props.onLogout}
-                  leftIcon={<Icon as={TbLogout} />}
-                  variant="outline"
-                >
-                  로그아웃
-                </Button>
-              ) : (
-                <Button
-                  colorScheme="white"
-                  onClick={props.onLoginModalOpen}
-                  leftIcon={<Icon as={BiLogIn} />}
-                  variant="outline"
-                >
-                  로그인
-                </Button>
-              )} */}
             </HStack>
           </Flex>
         </Container>
@@ -119,9 +110,9 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
         className="my-masonry-grid"
         columnClassName="my-masonry-grid_column"
       >
-        {props.post.map((post) => (
+        {props.posts.map((post) => (
           <Box
-            key={post.id}
+            key={post.pid}
             padding="20px"
             border="2px"
             borderRadius="5px"
@@ -129,20 +120,9 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
             marginBottom="10px"
             bg="white"
             overflow="hidden"
-            onClick={() => props.handlePostClick(post)}
+            onClick={() => props.onClickPost(post.pid)}
           >
             <Heading margin="0 0 10px 0">{post.title}</Heading>
-            {post.categories.map((category) => (
-              <Button
-                key={category}
-                size="xs"
-                colorScheme="gray"
-                textAlign="center"
-                margin="0 5px 10px 0"
-              >
-                {category}
-              </Button>
-            ))}
             <Text>{post.content}</Text>
           </Box>
         ))}
@@ -154,28 +134,157 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
         onClose={props.onPostModalClose}
         size="xl"
       >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{props.selectedPost?.title}</ModalHeader>
+        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
+        {props.selectedPost && (
+          <Flex
+            position="fixed"
+            top="20px"
+            left="20px"
+            zIndex="9999"
+            backgroundColor="transparent"
+            p={3}
+            borderRadius="lg"
+            boxShadow="lg"
+            alignItems="center"
+          >
+            <Avatar
+              size="sm"
+              mr={3}
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
+            />
+            <Box>
+              <Text fontWeight="bold" fontSize="md" color="white">
+                {props.selectedPost.uid}님의 아티클
+              </Text>
+              {/* <Text fontSize="sm" color="white">
+                {props.getRelativeTime(new Date(props.selectedPost.createdAt))}
+              </Text> */}
+            </Box>
+          </Flex>
+        )}
+        <ModalContent maxW="60%" minH="100vh" overflowY="auto" p={8}>
           <ModalCloseButton />
           <ModalBody>
-            <Text>{props.selectedPost?.content}</Text>
-            <Text mt={4} fontWeight="bold">
-              카테고리:
-            </Text>
             <Wrap mt={2}>
-              {props.selectedPost?.categories.map((category) => (
+              {props.selectedPost?.category.map((category) => (
                 <WrapItem key={category}>
                   <Button size="xs" colorScheme="blue" variant="outline">
-                    {category}
+                    # {category}
                   </Button>
                 </WrapItem>
               ))}
             </Wrap>
-            <Text mt={4} fontWeight="bold">
-              조회수: {(props.selectedPost?.views ?? 0) + 1}
-            </Text>
+            <br />
+            {/*             <Text color="gray">
+              {props.selectedPost?.createdAt.toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </Text> */}
+            <br />
+            <Heading size="lg">{props.selectedPost?.title}</Heading>
+            <br />
+            <Text>{props.selectedPost?.content}</Text>
+            <br />
+            <Divider my={4} />
+            <Text fontWeight="bold">댓글:</Text>
+            <Box mt={4}>
+              <InputGroup>
+                <Avatar
+                  size="sm"
+                  mr={3}
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
+                />
+                {/* <Input
+                  value={props.newComment}
+                  onChange={(e) => props.setNewComment(e.target.value)}
+                  bgColor="gray.100"
+                  placeholder="댓글을 입력하세요"
+                /> */}
+                <InputRightElement width="4.5rem">
+                  {/* <Button
+                    h="2rem" // 높이
+                    w="2rem" // 너비 (높이와 동일하게 설정)
+                    borderRadius="50%" // 버튼을 원형으로 설정
+                    bgColor="white"
+                    _hover={{ boxShadow: "0 0 0 3px rgba(0, 0, 255, 0.5)" }}
+                    onClick={() =>
+                      props.handleAddComment(props.selectedPost?.pid || 0)
+                    }
+                  >
+                    <ArrowUpIcon color="blue" />
+                  </Button> */}
+                </InputRightElement>
+              </InputGroup>
+              <br />
+            </Box>
+            {/* {props.selectedPost?.comments.map((comment) => (
+              <VStack align="start" spacing={4}>
+                <Flex alignItems="center">
+                  <Avatar
+                    size="md"
+                    name={comment.authorId}
+                    mr={4}
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
+                  />
+                  <Box>
+                    <Text fontWeight="bold">{comment.authorId}</Text>
+                    <Text fontSize="sm" color="gray.500">
+                      {props.getRelativeTime(new Date(comment.createdAt))}
+                    </Text>
+                  </Box>
+                </Flex>
+
+                <Box
+                  key={comment.pid}
+                  p={4}
+                  bg="gray.50"
+                  borderRadius="lg"
+                  w="full"
+                  boxShadow="sm"
+                >
+                  <Text fontSize="md" mb={2}>
+                    {comment.content.length > 50
+                      ? props.isExpanded
+                        ? comment.content
+                        : comment.content.slice(0, 50)
+                      : comment.content}
+                    {comment.content.length > 50 && (
+                      <Button
+                        size="xs"
+                        variant="link"
+                        onClick={props.toggleExpand}
+                        ml={2}
+                        color="blue.500"
+                      >
+                        {props.isExpanded ? "접기" : "...더보기"}
+                      </Button>
+                    )}
+                  </Text>
+
+                  <Flex justify="space-between" alignItems="center">
+                    <Flex alignItems="center">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          props.handleCommentLike(
+                            props.selectedPost?.pid || 0,
+                            comment.pid
+                          )
+                        }
+                      >
+                        <Icon as={FaThumbsUp} color="blue.500" />
+                        <Text ml={2}>{comment.likes}</Text>
+                      </Button>
+                    </Flex>
+                  </Flex>
+                </Box>
+              </VStack>
+            ))} */}
           </ModalBody>
+
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={props.onPostModalClose}>
               닫기
