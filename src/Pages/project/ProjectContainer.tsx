@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDisclosure } from "@chakra-ui/react";
 import ProjectPresentation from "./ProjectPresentation";
 import { useAppContext } from "../../AppContext";
+import { getMainPageProjects } from "../../Apis/apis";
 
 interface Comment {
   pid: number;
@@ -163,10 +164,6 @@ const ProjectContainer: React.FC = () => {
     }
 
     filtered.sort((a, b) => {
-      console.log("Comparing posts:", a.title, b.title);
-      console.log("Views:", a.views, b.views);
-      console.log("Upvotes:", a.upvotes, b.upvotes);
-      console.log("Created At:", a.createdAt, b.createdAt);
       if (sortCriteria === "views") {
         return b.views - a.views;
       } else if (sortCriteria === "upvotes") {
@@ -175,8 +172,7 @@ const ProjectContainer: React.FC = () => {
         return b.createdAt.getTime() - a.createdAt.getTime();
       }
       return 0;
-    });
-    console.log("Sorted filtered posts:", filtered);
+    }); 
 
     setFilteredPosts(filtered);
   };
