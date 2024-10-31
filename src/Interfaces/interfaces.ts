@@ -29,11 +29,10 @@ export interface SelectedPost {
 }
 
 export interface Comment {
-  comment_id: number;
+  cid: number;
   uid: string;
-  nickname: string;
   content: string;
-  parent_comment: null;
+  createdAt: string;
 }
 
 export const categoryMap: { [key: number]: string } = {

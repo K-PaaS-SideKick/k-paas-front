@@ -36,6 +36,7 @@ import {
   ProjectPost,
   categoryMap,
   SelectedPost,
+  Comment,
 } from "../../Interfaces/interfaces";
 import {
   FaRegCommentDots,
@@ -52,6 +53,12 @@ interface LandingPresentationProps {
   onPostModalClose: () => void;
   selectedPost: SelectedPost | null;
   onClickPost: (pid: number) => void;
+  getRelativeTime: (date: Date) => string;
+  comments: Comment[] | undefined;
+  setComments: (comment: Comment[] | undefined) => void;
+  isExpanded: boolean;
+  setIsExpanded: (isExpanded: boolean) => void;
+  toggleExpand: () => void;
 }
 
 const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
@@ -147,18 +154,13 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
             boxShadow="lg"
             alignItems="center"
           >
-            <Avatar
-              size="sm"
-              mr={3}
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
-            />
             <Box>
               <Text fontWeight="bold" fontSize="md" color="white">
                 {props.selectedPost.uid}님의 아티클
               </Text>
-              {/* <Text fontSize="sm" color="white">
+              <Text fontSize="sm" color="white">
                 {props.getRelativeTime(new Date(props.selectedPost.createdAt))}
-              </Text> */}
+              </Text>
             </Box>
           </Flex>
         )}
@@ -175,13 +177,17 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
               ))}
             </Wrap>
             <br />
-            {/*             <Text color="gray">
-              {props.selectedPost?.createdAt.toLocaleDateString("ko-KR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </Text> */}
+            <Text color="gray">
+              {props.selectedPost?.createdAt &&
+                new Date(props.selectedPost.createdAt).toLocaleDateString(
+                  "ko-KR",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}
+            </Text>
             <br />
             <Heading size="lg">{props.selectedPost?.title}</Heading>
             <br />
@@ -190,46 +196,19 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
             <Divider my={4} />
             <Text fontWeight="bold">댓글:</Text>
             <Box mt={4}>
-              <InputGroup>
-                <Avatar
-                  size="sm"
-                  mr={3}
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
-                />
-                {/* <Input
-                  value={props.newComment}
-                  onChange={(e) => props.setNewComment(e.target.value)}
-                  bgColor="gray.100"
-                  placeholder="댓글을 입력하세요"
-                /> */}
-                <InputRightElement width="4.5rem">
-                  {/* <Button
-                    h="2rem" // 높이
-                    w="2rem" // 너비 (높이와 동일하게 설정)
-                    borderRadius="50%" // 버튼을 원형으로 설정
-                    bgColor="white"
-                    _hover={{ boxShadow: "0 0 0 3px rgba(0, 0, 255, 0.5)" }}
-                    onClick={() =>
-                      props.handleAddComment(props.selectedPost?.pid || 0)
-                    }
-                  >
-                    <ArrowUpIcon color="blue" />
-                  </Button> */}
-                </InputRightElement>
-              </InputGroup>
               <br />
             </Box>
-            {/* {props.selectedPost?.comments.map((comment) => (
+            {props?.comments?.map((comment) => (
               <VStack align="start" spacing={4}>
                 <Flex alignItems="center">
                   <Avatar
                     size="md"
-                    name={comment.authorId}
+                    name={comment.uid}
                     mr={4}
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcjAxWz1AAqMpD7himtogTPUxeY-m4d9p9sw&s"
                   />
                   <Box>
-                    <Text fontWeight="bold">{comment.authorId}</Text>
+                    <Text fontWeight="bold">{comment.uid}</Text>
                     <Text fontSize="sm" color="gray.500">
                       {props.getRelativeTime(new Date(comment.createdAt))}
                     </Text>
@@ -237,7 +216,7 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
                 </Flex>
 
                 <Box
-                  key={comment.pid}
+                  key={comment.cid}
                   p={4}
                   bg="gray.50"
                   borderRadius="lg"
@@ -264,7 +243,7 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
                   </Text>
 
                   <Flex justify="space-between" alignItems="center">
-                    <Flex alignItems="center">
+                    {/* <Flex alignItems="center">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -278,11 +257,11 @@ const LandingPresentation: React.FC<LandingPresentationProps> = (props) => {
                         <Icon as={FaThumbsUp} color="blue.500" />
                         <Text ml={2}>{comment.likes}</Text>
                       </Button>
-                    </Flex>
+                    </Flex> */}
                   </Flex>
                 </Box>
               </VStack>
-            ))} */}
+            ))}
           </ModalBody>
 
           <ModalFooter>

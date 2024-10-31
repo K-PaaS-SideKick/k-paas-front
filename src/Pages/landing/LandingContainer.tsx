@@ -11,6 +11,7 @@ import {
   ProjectPost,
   SelectedPost,
   categoryMap,
+  Comment,
 } from "../../Interfaces/interfaces";
 import { getMainPageProjects, getProjectsDetail } from "../../Apis/apis";
 
@@ -38,7 +39,10 @@ const LandingContainer: React.FC = () => {
     currentMembers: 2,
     category: ["웹"],
   });
+  const [comments, setComments] = useState<Comment[]>();
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const [posts, setPosts] = useState<ProjectPost[]>([
     {
       pid: 1,
@@ -55,7 +59,9 @@ const LandingContainer: React.FC = () => {
       categories: ["웹"],
     },
   ]);
-
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
   const onClickPost = (postId: number) => {
     getProjectsDetail(postId)
       .then((response) => {
@@ -88,6 +94,23 @@ const LandingContainer: React.FC = () => {
   const handlePostClick = (post: SelectedPost) => {
     setSelectedPost(post);
     onPostModalOpen();
+  };
+
+  const getRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime(); // 시간 차이 (밀리초)
+
+    const diffInMinutes = Math.floor(diff / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMinutes < 60) {
+      return `약 ${diffInMinutes}분 전`;
+    } else if (diffInHours < 24) {
+      return `약 ${diffInHours}시간 전`;
+    } else {
+      return `약 ${diffInDays}일 전`;
+    }
   };
 
   // 더미 데이터
@@ -176,7 +199,6 @@ const LandingContainer: React.FC = () => {
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
-        setPosts(dummyData); // API 실패 시 더미 데이터 설정
       })
       .finally(() => {
         setIsLoading(false); // 로딩 상태 종료
@@ -195,6 +217,12 @@ const LandingContainer: React.FC = () => {
       onPostModalClose={onPostModalClose}
       selectedPost={selectedPost}
       onClickPost={onClickPost}
+      getRelativeTime={getRelativeTime}
+      comments={comments}
+      setComments={setComments}
+      isExpanded={isExpanded}
+      setIsExpanded={setIsExpanded}
+      toggleExpand={toggleExpand}
     />
   );
 };
